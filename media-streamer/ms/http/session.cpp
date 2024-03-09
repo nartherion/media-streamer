@@ -1,4 +1,4 @@
-#include "session.hpp"
+#include <ms/http/session.hpp>
 
 #include <chrono>
 
@@ -15,6 +15,11 @@ void session::create_and_start(boost::asio::ip::tcp::socket socket,
     const auto s = std::shared_ptr<session>(new session(std::move(socket), std::move(on_http_request_callback)));
     s->run();
 }
+
+session::session(boost::asio::ip::tcp::socket socket, on_http_request_callback_t on_http_request_callback)
+    : stream_(std::move(socket)),
+      on_http_request_callback_(std::move(on_http_request_callback))
+{}
 
 void session::run()
 {
@@ -78,6 +83,16 @@ void session::on_write(boost::beast::error_code ec, const bool keep_alive)
     }
 
     read();
+}
+
+void session::close()
+{
+    boost::beast::error_code ec;
+    stream_.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_send, ec);
+    if (ec)
+    {
+        SPDLOG_ERROR("Failed to close session: {} ({})", ec.what(), ec.value());
+    }
 }
 
 } // namespace ms::http

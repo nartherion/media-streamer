@@ -1,11 +1,10 @@
-#include "server.hpp"
+#include <ms/http/server.hpp>
+#include <ms/common/utils.hpp>
 
 #include <spdlog/spdlog.h>
 
 #include <boost/asio/strand.hpp>
 #include <boost/beast/version.hpp>
-
-#include "utils.hpp"
 
 namespace ms::http
 {
@@ -87,6 +86,12 @@ void server::create_and_start(boost::asio::io_context &context, const boost::asi
     s->accept();
 }
 
+server::server(boost::asio::io_context &context, boost::asio::ip::tcp::acceptor acceptor, const std::string &root)
+    : context_(context),
+      acceptor_(std::move(acceptor)),
+      root_(root)
+{}
+
 void server::accept()
 {
     acceptor_.async_accept(boost::asio::make_strand(context_),
@@ -130,7 +135,7 @@ boost::beast::http::message_generator server::process_http_request(session::http
 
     const std::string path = [this, &target]
     {
-        const std::string concatenated_path = utils::concatenate_path(root_, target);
+        const std::string concatenated_path = common::concatenate_path(root_, target);
 
         if (concatenated_path.back() == '/')
             return concatenated_path + "index.html";
@@ -160,7 +165,7 @@ boost::beast::http::message_generator server::process_http_request(session::http
         boost::beast::http::response<boost::beast::http::empty_body> response(boost::beast::http::status::ok, version);
 
         response.set(boost::beast::http::field::server, BOOST_BEAST_VERSION_STRING);
-        response.set(boost::beast::http::field::content_type, utils::file_type(path));
+        response.set(boost::beast::http::field::content_type, common::file_type(path));
 
         response.content_length(size);
         response.keep_alive(request.keep_alive());
@@ -175,18 +180,12 @@ boost::beast::http::message_generator server::process_http_request(session::http
                                                                          std::move(body_tuple), status_tuple);
 
     response.set(boost::beast::http::field::server, BOOST_BEAST_VERSION_STRING);
-    response.set(boost::beast::http::field::content_type, utils::file_type(path));
+    response.set(boost::beast::http::field::content_type, common::file_type(path));
 
     response.content_length(size);
     response.keep_alive(request.keep_alive());
 
     return response;
 }
-
-server::server(boost::asio::io_context &context, boost::asio::ip::tcp::acceptor acceptor, const std::string &root)
-    : context_(context)
-    , acceptor_(std::move(acceptor))
-    , root_(root)
-{}
 
 } // namespace ms::http

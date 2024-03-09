@@ -10,4 +10,4 @@ find_package(spdlog 1.9.2 REQUIRED)
 include(cmake/compiler_warnings.cmake)
 add_compile_options(${COMPILER_WARNINGS})
 
-add_subdirectory(media-streamer/http)
+add_subdirectory(media-streamer)

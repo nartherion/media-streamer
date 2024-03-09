@@ -4,7 +4,6 @@
 #include <functional>
 
 #include <boost/asio/ip/tcp.hpp>
-
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 
@@ -24,13 +23,10 @@ private:
     session(boost::asio::ip::tcp::socket socket, on_http_request_callback_t on_http_request_callback);
 
     void run();
-
     void read();
     void on_read(boost::beast::error_code ec, std::size_t bytes_transferred);
-
     void write(boost::beast::http::message_generator message);
     void on_write(boost::beast::error_code ec, const bool keep_alive);
-
     void close();
 
     boost::beast::tcp_stream stream_;

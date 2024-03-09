@@ -23,7 +23,6 @@ private:
 
     void accept();
     void on_accept(boost::beast::error_code ec, boost::asio::ip::tcp::socket socket);
-
     boost::beast::http::message_generator process_http_request(session::http_request_t request);
 
     boost::asio::io_context &context_;

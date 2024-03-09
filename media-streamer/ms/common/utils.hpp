@@ -4,7 +4,7 @@
 
 #include <boost/beast/core/string.hpp>
 
-namespace ms::http::utils
+namespace ms::common
 {
 
 [[nodiscard]] inline std::string concatenate_path(const std::string &base, const std::string &path)
