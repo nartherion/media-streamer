@@ -6,6 +6,7 @@ project(media-streamer)
 
 find_package(Boost 1.84.0 REQUIRED headers)
 find_package(spdlog 1.9.2 REQUIRED)
+find_package(fmt 8.1.1 REQUIRED)
 
 include(cmake/compiler_warnings.cmake)
 add_compile_options(${COMPILER_WARNINGS})

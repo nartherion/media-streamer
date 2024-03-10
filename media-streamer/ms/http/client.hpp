@@ -30,7 +30,7 @@ private:
     boost::beast::tcp_stream stream_;
     boost::beast::flat_buffer buffer_;
     boost::beast::http::request<boost::beast::http::empty_body> request_;
-    boost::beast::http::request<boost::beast::http::string_body> response_;
+    boost::beast::http::response<boost::beast::http::string_body> response_;
 };
 
 } // namespace ms::http

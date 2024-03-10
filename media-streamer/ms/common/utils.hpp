@@ -2,8 +2,6 @@
 
 #include <string>
 
-#include <boost/beast/core/string.hpp>
-
 namespace ms::common
 {
 
@@ -24,26 +22,17 @@ namespace ms::common
     return base + path;
 }
 
-[[nodiscard]] inline std::string file_type(const boost::beast::string_view path)
+[[nodiscard]] inline std::string file_type(const std::string_view path)
 {
-    const std::string extension = [&path]
-    {
-        const auto position = path.find(".");
-
-        if (position == boost::beast::string_view::npos)
-        {
-            return boost::beast::string_view();
-        }
-
-        return path.substr(position);
-    }();
+    const auto position = path.find(".");
+    const std::string_view extension = (position == std::string_view::npos) ? "" : path.substr(position);
 
     if (extension == ".html")
     {
         return "text/html";
     }
 
-    if (extension == "jpeg")
+    if (extension == ".jpeg")
     {
         return "image/jpeg";
     }

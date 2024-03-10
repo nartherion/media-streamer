@@ -97,7 +97,7 @@ void client::on_read(const boost::beast::error_code ec)
         return;
     }
 
-    SPDLOG_INFO("Received message: {}", response_.body());
+    SPDLOG_INFO("Received response: {}", response_.body());
 
     boost::beast::error_code shutdown_ec;
     stream_.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, shutdown_ec);

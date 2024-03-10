@@ -13,4 +13,4 @@ struct client_config
     unsigned version;
 };
 
-};
+} // namespace ms::http

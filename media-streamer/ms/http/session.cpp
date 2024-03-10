@@ -89,7 +89,7 @@ void session::close()
 {
     boost::beast::error_code ec;
     stream_.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_send, ec);
-    if (ec)
+    if (ec && ec != boost::beast::errc::not_connected)
     {
         SPDLOG_ERROR("Failed to close session: {} ({})", ec.what(), ec.value());
     }
