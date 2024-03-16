@@ -1,13 +1,13 @@
 #pragma once
 
+#include "session.hpp"
+
 #include <memory>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
 #include <boost/beast/core/error.hpp>
-
-#include "session.hpp"
 
 namespace ms::http
 {
@@ -25,10 +25,10 @@ private:
     void on_accept(boost::beast::error_code ec, boost::asio::ip::tcp::socket socket);
     boost::beast::http::message_generator process_http_request(session::http_request_t request);
 
+    const std::string root_;
+
     boost::asio::io_context &context_;
     boost::asio::ip::tcp::acceptor acceptor_;
-
-    const std::string root_;
 };
 
 } // namespace ms::http

@@ -2,15 +2,26 @@
 
 #include <string>
 
+#include <boost/beast/http/verb.hpp>
+
 namespace ms::http
 {
 
 struct client_config
 {
-    std::string host;
-    std::string port;
-    std::string target;
-    unsigned version;
+    struct endpoint
+    {
+        std::string host_;
+        int port_;
+    };
+    endpoint endpoint_;
+
+    struct request
+    {
+        std::string target_;
+        boost::beast::http::verb method_;
+    };
+    request request_;
 };
 
 } // namespace ms::http

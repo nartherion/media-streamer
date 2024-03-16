@@ -15,16 +15,15 @@ namespace
 boost::beast::http::message_generator make_html_response(const session::http_request_t &request,
                                                          const std::string_view body)
 {
-    boost::beast::http::response<boost::beast::http::string_body> response(
-        boost::beast::http::status::bad_request, request.version());
+    boost::beast::http::response<boost::beast::http::string_body> response(boost::beast::http::status::bad_request,
+                                                                           request.version());
 
     response.set(boost::beast::http::field::server, BOOST_BEAST_VERSION_STRING);
     response.set(boost::beast::http::field::content_type, "text/html");
-
     response.keep_alive(request.keep_alive());
     response.body() = body;
-
     response.prepare_payload();
+
     return response;
 }
 
@@ -87,9 +86,9 @@ void server::create_and_start(boost::asio::io_context &context, const boost::asi
 }
 
 server::server(boost::asio::io_context &context, boost::asio::ip::tcp::acceptor acceptor, const std::string &root)
-    : context_(context),
-      acceptor_(std::move(acceptor)),
-      root_(root)
+    : root_(root),
+      context_(context),
+      acceptor_(std::move(acceptor))
 {}
 
 void server::accept()
@@ -166,7 +165,6 @@ boost::beast::http::message_generator server::process_http_request(session::http
 
         response.set(boost::beast::http::field::server, BOOST_BEAST_VERSION_STRING);
         response.set(boost::beast::http::field::content_type, common::file_type(path));
-
         response.content_length(size);
         response.keep_alive(request.keep_alive());
 
@@ -181,7 +179,6 @@ boost::beast::http::message_generator server::process_http_request(session::http
 
     response.set(boost::beast::http::field::server, BOOST_BEAST_VERSION_STRING);
     response.set(boost::beast::http::field::content_type, common::file_type(path));
-
     response.content_length(size);
     response.keep_alive(request.keep_alive());
 

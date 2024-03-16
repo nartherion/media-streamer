@@ -1,7 +1,6 @@
 #include <ms/http/client.hpp>
 
 #include <chrono>
-#include <memory>
 
 #include <boost/beast/version.hpp>
 
@@ -9,6 +8,26 @@
 
 namespace ms::http
 {
+
+namespace
+{
+
+client::http_request_t make_http_request(const client_config &config)
+{
+    client::http_request_t request;
+
+    const auto [endpoint, request_config] = config;
+    const auto [target, method] = request_config;
+
+    request.method(method);
+    request.target(target);
+    request.set(boost::beast::http::field::host, endpoint.host_);
+    request.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+
+    return request;
+}
+
+} // namespace
 
 void client::create_and_start(boost::asio::io_context &context, const client_config &config)
 {
@@ -23,15 +42,10 @@ client::client(boost::asio::io_context &context)
 
 void client::run(const client_config &config)
 {
-    const auto &[host, port, target, version] = config;
+    request_ = make_http_request(config);
 
-    request_.version(version);
-    request_.method(boost::beast::http::verb::get);
-    request_.target(target);
-    request_.set(boost::beast::http::field::host, host);
-    request_.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-
-    resolver_.async_resolve(host, port,
+    const auto [host, port] = config.endpoint_;
+    resolver_.async_resolve(host, std::to_string(port),
         [self = shared_from_this()]
         (const boost::beast::error_code ec, const boost::asio::ip::tcp::resolver::results_type results)
         {

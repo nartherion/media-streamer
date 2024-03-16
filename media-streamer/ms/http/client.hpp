@@ -15,6 +15,7 @@ namespace ms::http
 class client : public std::enable_shared_from_this<client>
 {
 public:
+    using http_request_t = boost::beast::http::request<boost::beast::http::empty_body>;
     static void create_and_start(boost::asio::io_context &context, const client_config &config);
 
 private:
@@ -29,7 +30,7 @@ private:
     boost::asio::ip::tcp::resolver resolver_;
     boost::beast::tcp_stream stream_;
     boost::beast::flat_buffer buffer_;
-    boost::beast::http::request<boost::beast::http::empty_body> request_;
+    http_request_t request_;
     boost::beast::http::response<boost::beast::http::string_body> response_;
 };
 
