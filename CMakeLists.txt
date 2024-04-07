@@ -11,4 +11,5 @@ find_package(fmt 8.1.1 REQUIRED)
 include(cmake/compiler_warnings.cmake)
 add_compile_options(${COMPILER_WARNINGS})
 
+add_subdirectory(dependencies)
 add_subdirectory(media-streamer)
