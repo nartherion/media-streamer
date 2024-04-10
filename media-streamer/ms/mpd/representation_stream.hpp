@@ -20,10 +20,10 @@ public:
 
     virtual ~representation_stream() = default;
 
-    [[nodiscard]] virtual dash::mpd::ISegment *get_initialization_segment() const = 0;
-    [[nodiscard]] virtual dash::mpd::ISegment *get_index_segment() const = 0;
-    [[nodiscard]] virtual dash::mpd::ISegment *get_media_segment() const = 0;
-    [[nodiscard]] virtual dash::mpd::ISegment *get_bitstream_switching_segment() const = 0;
+    [[nodiscard]] virtual dash::mpd::ISegment &get_initialization_segment() const = 0;
+    [[nodiscard]] virtual dash::mpd::ISegment &get_index_segment() const = 0;
+    [[nodiscard]] virtual dash::mpd::ISegment &get_media_segment() const = 0;
+    [[nodiscard]] virtual dash::mpd::ISegment &get_bitstream_switching_segment() const = 0;
     [[nodiscard]] virtual type get_stream_type() const = 0;
     [[nodiscard]] virtual std::uint32_t get_size() const = 0;
     [[nodiscard]] virtual std::uint32_t get_first_segment_number() const = 0;
