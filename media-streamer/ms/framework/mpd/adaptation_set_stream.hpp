@@ -10,7 +10,7 @@
 #include <IPeriod.h>
 #include <IAdaptationSet.h>
 
-namespace ms::mpd
+namespace ms::framework::mpd
 {
 
 class adaptation_set_stream
@@ -25,4 +25,4 @@ private:
     std::map<dash::mpd::IRepresentation *, std::shared_ptr<representation_stream>> representations_;
 };
 
-} // namespace ms::mpd
+} // namespace ms::framework::mpd

@@ -10,15 +10,13 @@
 #include <IMPD.h>
 #include <IPeriod.h>
 
-namespace ms::mpd
+namespace ms::framework::mpd
 {
 
 class abstract_representation_stream : public representation_stream
 {
 public:
-    abstract_representation_stream(const dash::mpd::IMPD &mpd, const dash::mpd::IPeriod &period,
-                                   const dash::mpd::IAdaptationSet &adaptation_set,
-                                   const dash::mpd::IRepresentation &representation);
+    abstract_representation_stream(const dash::mpd::IMPD &mpd, const std::vector<dash::mpd::IBaseUrl *> &base_urls);
     virtual ~abstract_representation_stream() = default;
 
     std::uint32_t get_first_segment_number() const override;
@@ -26,11 +24,8 @@ public:
     std::uint32_t get_last_segment_number() const override;
 
 protected:
-    std::vector<dash::mpd::IBaseUrl *> base_urls_;
     const dash::mpd::IMPD &mpd_;
-    const dash::mpd::IPeriod &period_;
-    const dash::mpd::IAdaptationSet &adaptation_set_;
-    const dash::mpd::IRepresentation &representation_;
+    const std::vector<dash::mpd::IBaseUrl *> base_urls_;
 };
 
-} // namespace ms::mpd
+} // namespace ms::framework::mpd

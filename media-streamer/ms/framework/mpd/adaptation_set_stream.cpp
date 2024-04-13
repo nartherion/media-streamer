@@ -1,7 +1,9 @@
 #include <ms/framework/mpd/adaptation_set_stream.hpp>
 #include <ms/framework/mpd/representation_stream_factory.hpp>
 
-namespace ms::mpd
+#include <optional>
+
+namespace ms::framework::mpd
 {
 
 namespace
@@ -10,8 +12,9 @@ namespace
 std::map<dash::mpd::IRepresentation *, std::shared_ptr<representation_stream>> make_representations_map(
         const dash::mpd::IMPD &mpd, const dash::mpd::IAdaptationSet &adaptation_set, const dash::mpd::IPeriod &period)
 {
-    const auto determine_representation_stream_type =
-        [&adaptation_set, &period](const dash::mpd::IRepresentation &representation)
+    const auto get_representation_stream_type =
+        [&adaptation_set, &period]
+        (const dash::mpd::IRepresentation &representation) -> std::optional<representation_stream::type>
         {
             if (representation.GetSegmentList())
             {
@@ -58,7 +61,7 @@ std::map<dash::mpd::IRepresentation *, std::shared_ptr<representation_stream>> m
                 return representation_stream::type::single_media_segment;
             }
 
-            return representation_stream::type::undefined;
+            return {};
         };
 
     std::map<dash::mpd::IRepresentation *, std::shared_ptr<representation_stream>> representation_to_stream;
@@ -68,9 +71,11 @@ std::map<dash::mpd::IRepresentation *, std::shared_ptr<representation_stream>> m
     {
         const dash::mpd::IRepresentation &representation = *representation_pointer;
 
-        const representation_stream::type type = determine_representation_stream_type(representation);
-        representation_to_stream[representation_pointer] =
-            representation_stream_factory::create(type, mpd, period, adaptation_set, representation);
+        if (const std::optional<representation_stream::type> type = get_representation_stream_type(representation))
+        {
+            representation_to_stream[representation_pointer] =
+                representation_stream_factory::create(type.value(), mpd, period, adaptation_set, representation);
+        }
     }
 
     return representation_to_stream;
@@ -89,7 +94,7 @@ std::shared_ptr<representation_stream> adaptation_set_stream::get_representation
     if (representations_.contains(&representation))
         return representations_.at(&representation);
 
-    return nullptr;
+    return {};
 }
 
-} // namespace ms::mpd
+} // namespace ms::framework::mpd

@@ -9,7 +9,7 @@
 #include <IAdaptationSet.h>
 #include <IRepresentation.h>
 
-namespace ms::mpd
+namespace ms::framework::mpd
 {
 
 class representation_stream_factory
@@ -21,4 +21,4 @@ public:
                                                          const dash::mpd::IRepresentation &representation);
 };
 
-} // namespace ms::mpd
+} // namespace ms::framework::mpd
