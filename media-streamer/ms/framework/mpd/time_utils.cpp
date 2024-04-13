@@ -1,4 +1,4 @@
-#include <ms/mpd/time_utils.hpp>
+#include <ms/framework/mpd/time_utils.hpp>
 
 #include <ctime>
 
@@ -9,7 +9,7 @@
 namespace
 {
 
-[[nodiscard]] std::vector<std::string> split_to_strings(const std::string &s, const char delimiter)
+std::vector<std::string> split_to_strings(const std::string &s, const char delimiter)
 {
     std::stringstream ss(s);
     std::string item;
@@ -23,7 +23,7 @@ namespace
     return strings;
 }
 
-[[nodiscard]] std::vector<int> split_to_integers(const std::string &s, const char delimiter)
+std::vector<int> split_to_integers(const std::string &s, const char delimiter)
 {
     std::stringstream ss(s);
     std::string item;
@@ -37,7 +37,7 @@ namespace
     return integers;
 }
 
-[[nodiscard]] std::chrono::system_clock::duration resolve_utc_date_time(const std::string &date_time_string)
+std::chrono::system_clock::duration resolve_utc_date_time(const std::string &date_time_string)
 {
     if (date_time_string.empty())
     {
@@ -64,7 +64,7 @@ namespace
     return std::chrono::system_clock::from_time_t(mktime(time_info)).time_since_epoch();
 }
 
-[[nodiscard]] std::chrono::system_clock::duration get_current_utc_time()
+std::chrono::system_clock::duration get_current_utc_time()
 {
     return std::chrono::system_clock::now().time_since_epoch();
 }
