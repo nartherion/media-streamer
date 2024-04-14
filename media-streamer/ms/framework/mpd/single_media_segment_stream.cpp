@@ -44,7 +44,7 @@ std::shared_ptr<dash::mpd::ISegment> single_media_segment_stream::get_media_segm
     const std::vector<dash::mpd::IBaseUrl *> &base_urls = representation_.GetBaseURLs();
     if (base_urls.size() > segment_number)
     {
-        return std::shared_ptr<dash::mpd::ISegment>(base_urls.at(segment_number)->ToMediaSegment(base_urls));
+        return std::shared_ptr<dash::mpd::ISegment>(base_urls[segment_number]->ToMediaSegment(base_urls));
     }
 
     return std::shared_ptr<dash::mpd::ISegment>(base_urls.front()->ToMediaSegment(base_urls));

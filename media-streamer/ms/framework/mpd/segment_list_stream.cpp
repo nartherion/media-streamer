@@ -25,7 +25,7 @@ std::shared_ptr<dash::mpd::ISegment> segment_list_stream::get_index_segment(cons
     const std::vector<dash::mpd::ISegmentURL *>& segment_urls = segment_list_.GetSegmentURLs();
     if (segment_urls.size() > segment_number)
     {
-        return std::shared_ptr<dash::mpd::ISegment>(segment_urls.at(segment_number)->ToIndexSegment(base_urls_));
+        return std::shared_ptr<dash::mpd::ISegment>(segment_urls[segment_number]->ToIndexSegment(base_urls_));
     }
 
     return {};
@@ -36,7 +36,7 @@ std::shared_ptr<dash::mpd::ISegment> segment_list_stream::get_media_segment(cons
     const std::vector<dash::mpd::ISegmentURL *>& segment_urls = segment_list_.GetSegmentURLs();
     if (segment_urls.size() > segment_number)
     {
-        return std::shared_ptr<dash::mpd::ISegment>(segment_urls.at(segment_number)->ToMediaSegment(base_urls_));
+        return std::shared_ptr<dash::mpd::ISegment>(segment_urls[segment_number]->ToMediaSegment(base_urls_));
     }
 
     return {};

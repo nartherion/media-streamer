@@ -2,6 +2,8 @@
 
 #include <ms/framework/mpd/abstract_representation_stream.hpp>
 
+#include <IRepresentation.h>
+
 namespace ms::framework::mpd
 {
 

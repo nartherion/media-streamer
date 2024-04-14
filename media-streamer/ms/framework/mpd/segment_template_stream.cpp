@@ -69,44 +69,42 @@ std::shared_ptr<dash::mpd::ISegment> segment_template_stream::get_index_segment(
 {
     if (segment_template_.GetSegmentTimeline())
     {
-        if (!segment_start_times_.empty())
+        if (segment_start_times_.size() > segment_number)
         {
             return std::shared_ptr<dash::mpd::ISegment>(
                 segment_template_.GetIndexSegmentFromTime(base_urls_, representation_.GetId(),
                                                           representation_.GetBandwidth(),
-                                                          segment_start_times_.at(segment_number)));
+                                                          segment_start_times_[segment_number]));
         }
 
         return {};
     }
 
-    const auto number = segment_template_.GetStartNumber() + static_cast<std::uint32_t>(segment_number);
-
+    const auto index_segment_number = segment_template_.GetStartNumber() + static_cast<std::uint32_t>(segment_number);
     return std::shared_ptr<dash::mpd::ISegment>(
         segment_template_.GetIndexSegmentFromNumber(base_urls_, representation_.GetId(), representation_.GetBandwidth(),
-                                                    number));
+                                                    index_segment_number));
 }
 
 std::shared_ptr<dash::mpd::ISegment> segment_template_stream::get_media_segment(const std::size_t segment_number) const
 {
     if (segment_template_.GetSegmentTimeline())
     {
-        if (!segment_start_times_.empty())
+        if (segment_start_times_.size() > segment_number)
         {
             return std::shared_ptr<dash::mpd::ISegment>(
                 segment_template_.GetMediaSegmentFromTime(base_urls_, representation_.GetId(),
                                                           representation_.GetBandwidth(),
-                                                          segment_start_times_.at(segment_number)));
+                                                          segment_start_times_[segment_number]));
         }
 
         return {};
     }
 
+    const auto media_segment_number = segment_template_.GetStartNumber() + static_cast<std::uint32_t>(segment_number);
     return std::shared_ptr<dash::mpd::ISegment>(
         segment_template_.GetMediaSegmentFromNumber(base_urls_, representation_.GetId(),
-                                                    representation_.GetBandwidth(),
-                                                    segment_template_.GetStartNumber() +
-                                                    static_cast<std::uint32_t>(segment_number)));
+                                                    representation_.GetBandwidth(), media_segment_number));
 }
 
 std::shared_ptr<dash::mpd::ISegment> segment_template_stream::get_bitstream_switching_segment() const

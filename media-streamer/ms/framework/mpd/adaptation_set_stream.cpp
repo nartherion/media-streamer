@@ -9,7 +9,7 @@ namespace ms::framework::mpd
 namespace
 {
 
-std::map<dash::mpd::IRepresentation *, std::shared_ptr<representation_stream>> make_representations_map(
+adaptation_set_stream::representation_stream_table make_representation_stream_table(
         const dash::mpd::IMPD &mpd, const dash::mpd::IAdaptationSet &adaptation_set, const dash::mpd::IPeriod &period)
 {
     const auto get_representation_stream_type =
@@ -64,35 +64,34 @@ std::map<dash::mpd::IRepresentation *, std::shared_ptr<representation_stream>> m
             return {};
         };
 
-    std::map<dash::mpd::IRepresentation *, std::shared_ptr<representation_stream>> representation_to_stream;
-    std::vector<dash::mpd::IRepresentation *> representations = adaptation_set.GetRepresentation();
-
-    for (dash::mpd::IRepresentation *representation_pointer : representations)
+    adaptation_set_stream::representation_stream_table representation_stream_table;
+    for (const dash::mpd::IRepresentation *representation_pointer : adaptation_set.GetRepresentation())
     {
         const dash::mpd::IRepresentation &representation = *representation_pointer;
-
         if (const std::optional<representation_stream::type> type = get_representation_stream_type(representation))
         {
-            representation_to_stream[representation_pointer] =
+            representation_stream_table[representation_pointer] =
                 representation_stream_factory::create(type.value(), mpd, period, adaptation_set, representation);
         }
     }
 
-    return representation_to_stream;
+    return representation_stream_table;
 }
 
 } // namespace
 
 adaptation_set_stream::adaptation_set_stream(const dash::mpd::IMPD &mpd, const dash::mpd::IPeriod &period,
                                              const dash::mpd::IAdaptationSet &adaptation_set)
-    : representations_(make_representations_map(mpd, adaptation_set, period))
+    : representation_stream_table_(make_representation_stream_table(mpd, adaptation_set, period))
 {}
 
 std::shared_ptr<representation_stream> adaptation_set_stream::get_representation_stream(
-        dash::mpd::IRepresentation &representation)
+        const dash::mpd::IRepresentation &representation)
 {
-    if (representations_.contains(&representation))
-        return representations_.at(&representation);
+    const dash::mpd::IRepresentation *representation_pointer = &representation;
+
+    if (representation_stream_table_.contains(representation_pointer))
+        return representation_stream_table_[representation_pointer];
 
     return {};
 }

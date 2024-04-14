@@ -33,7 +33,7 @@ std::vector<dash::mpd::IBaseUrl *> resolve_base_url(const dash::mpd::IMPD &mpd, 
     const std::vector<dash::mpd::IBaseUrl *> &period_base_urls = period.GetBaseURLs();
     if (!period_base_urls.empty())
     {
-        if (period_base_urls.size() > mpd_base_url_index)
+        if (period_base_urls.size() > period_base_url_index)
         {
             base_urls.push_back(period_base_urls[period_base_url_index]);
         }
@@ -46,7 +46,7 @@ std::vector<dash::mpd::IBaseUrl *> resolve_base_url(const dash::mpd::IMPD &mpd, 
     const std::vector<dash::mpd::IBaseUrl *> &adaptation_set_base_urls = adaptation_set.GetBaseURLs();
     if (!adaptation_set_base_urls.empty())
     {
-        if (adaptation_set_base_urls.size() > mpd_base_url_index)
+        if (adaptation_set_base_urls.size() > adaptation_set_base_url_index)
         {
             base_urls.push_back(adaptation_set_base_urls[adaptation_set_base_url_index]);
         }

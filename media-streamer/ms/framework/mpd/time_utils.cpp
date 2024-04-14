@@ -1,6 +1,7 @@
 #include <ms/framework/mpd/time_utils.hpp>
 
 #include <ctime>
+#include <cassert>
 
 #include <vector>
 #include <array>
@@ -50,16 +51,20 @@ std::chrono::system_clock::duration resolve_utc_date_time(const std::string &dat
     std::tm *time_info = gmtime(&raw_time);
 
     const std::vector<std::string> date_time = split_to_strings(date_time_string, 'T');
-    const std::vector<int> date_chunks = split_to_integers(date_time.at(0), '-');
-    const std::vector<int> time_chunks = split_to_integers(date_time.at(1), ':');
+    assert(date_time.size() == 2);
 
-    time_info->tm_year = date_chunks.at(0) - 1900;
-    time_info->tm_mon = date_chunks.at(1) - 1;
-    time_info->tm_mday = date_chunks.at(2);
+    const std::vector<int> date_chunks = split_to_integers(date_time[0], '-');
+    const std::vector<int> time_chunks = split_to_integers(date_time[1], ':');
+    assert(date_chunks.size() == 3);
+    assert(time_chunks.size() == 3);
 
-    time_info->tm_hour = time_chunks.at(0);
-    time_info->tm_min = time_chunks.at(1);
-    time_info->tm_sec = time_chunks.at(2);
+    time_info->tm_year = date_chunks[0] - 1900;
+    time_info->tm_mon = date_chunks[1] - 1;
+    time_info->tm_mday = date_chunks[2];
+
+    time_info->tm_hour = time_chunks[0];
+    time_info->tm_min = time_chunks[1];
+    time_info->tm_sec = time_chunks[2];
 
     return std::chrono::system_clock::from_time_t(mktime(time_info)).time_since_epoch();
 }
@@ -89,7 +94,9 @@ std::uint32_t get_utc_time_in_seconds(const std::string &date_time_string)
 std::uint32_t get_duration_in_seconds(const std::string &duration)
 {
     if (duration.empty() || duration.substr(0, 2) != "PT")
+    {
         return {};
+    }
 
     const std::array designators { 'H', 'M', 'S' };
     size_t cursor = 2;
@@ -99,15 +106,15 @@ std::uint32_t get_duration_in_seconds(const std::string &duration)
         const std::size_t end = duration.find(designator, cursor);
         if (end != std::string::npos)
         {
-            return static_cast<std::uint32_t>(std::stoi(duration.substr(cursor, end - std::exchange(cursor, end + 1))));
+            const std::size_t old_cursor = std::exchange(cursor, end + 1);
+            return static_cast<std::uint32_t>(std::stoi(duration.substr(old_cursor, end - old_cursor)));
         }
 
         return {};
     };
 
-    const std::uint32_t hours = parse(designators.at(0));
-    const std::uint32_t minutes = parse(designators.at(1));
-    const std::uint32_t seconds = parse(designators.at(2));
-
+    const std::uint32_t hours = parse(designators[0]);
+    const std::uint32_t minutes = parse(designators[1]);
+    const std::uint32_t seconds = parse(designators[2]);
     return hours * 3600 + minutes * 60 + seconds;
 }
