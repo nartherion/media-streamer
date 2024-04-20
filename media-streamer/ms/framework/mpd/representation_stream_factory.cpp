@@ -59,7 +59,7 @@ std::vector<dash::mpd::IBaseUrl *> resolve_base_url(const dash::mpd::IMPD &mpd, 
     if (!base_urls.empty())
     {
         const std::string &url = base_urls.front()->GetUrl();
-        if (url.substr(0, 7) != "http://" && url.substr(0, 8) != "https://")
+        if (!url.starts_with("http://") && !url.starts_with("https://"))
         {
             base_urls.insert(base_urls.begin(), mpd.GetMPDPathBaseUrl());
         }

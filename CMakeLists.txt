@@ -4,6 +4,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 project(media-streamer)
 
+find_package(Microsoft.GSL 4.0.0 REQUIRED)
 find_package(spdlog 1.9.2 REQUIRED)
 find_package(fmt 8.1.1 REQUIRED)
 

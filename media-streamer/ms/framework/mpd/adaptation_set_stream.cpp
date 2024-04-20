@@ -65,7 +65,8 @@ adaptation_set_stream::representation_stream_table make_representation_stream_ta
         };
 
     adaptation_set_stream::representation_stream_table representation_stream_table;
-    for (const dash::mpd::IRepresentation *representation_pointer : adaptation_set.GetRepresentation())
+    const std::vector<dash::mpd::IRepresentation *> representations = adaptation_set.GetRepresentation();
+    for (const gsl::not_null<const dash::mpd::IRepresentation *> representation_pointer : representations)
     {
         const dash::mpd::IRepresentation &representation = *representation_pointer;
         if (const std::optional<representation_stream::type> type = get_representation_stream_type(representation))

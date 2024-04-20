@@ -1,6 +1,7 @@
 project(ms-mpd)
 
 add_library(${PROJECT_NAME}
+    SHARED
     abstract_representation_stream.cpp
     adaptation_set_stream.cpp
     segment_list_stream.cpp

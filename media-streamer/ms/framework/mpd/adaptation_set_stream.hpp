@@ -5,6 +5,8 @@
 #include <map>
 #include <memory>
 
+#include <gsl/pointers>
+
 #include <IRepresentation.h>
 #include <IMPD.h>
 #include <IPeriod.h>
@@ -17,7 +19,7 @@ class adaptation_set_stream
 {
 public:
     using representation_stream_table =
-        std::map<const dash::mpd::IRepresentation *, std::shared_ptr<representation_stream>>;
+        std::map<gsl::not_null<const dash::mpd::IRepresentation *>, std::shared_ptr<representation_stream>>;
 
     adaptation_set_stream(const dash::mpd::IMPD &mpd, const dash::mpd::IPeriod &period,
                           const dash::mpd::IAdaptationSet &adaptation_set);
