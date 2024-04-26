@@ -2,7 +2,7 @@
 
 #include <ms/framework/mpd/adaptation_set_stream.hpp>
 #include <ms/framework/mpd/representation_stream.hpp>
-#include <ms/framework/media/buffer.hpp>
+#include <ms/framework/data/buffer.hpp>
 
 #include <cstdint>
 
@@ -28,10 +28,10 @@ public:
 
     bool start();
     void stop();
-    std::shared_ptr<media::object> get_next_segment();
-    std::shared_ptr<media::object> get_segment(std::uint32_t segment_number);
-    std::shared_ptr<media::object> get_initialization_segment();
-    std::shared_ptr<media::object> find_initialization_segment(const dash::mpd::IRepresentation &representation);
+    std::shared_ptr<data::object> get_next_segment();
+    std::shared_ptr<data::object> get_segment(std::uint32_t segment_number);
+    std::shared_ptr<data::object> get_initialization_segment();
+    std::shared_ptr<data::object> find_initialization_segment(const dash::mpd::IRepresentation &representation);
     std::uint32_t get_position() const;
     void set_position(std::uint32_t segment_number);
     void set_position_in_milliseconds(std::uint32_t milliseconds);
@@ -40,8 +40,8 @@ public:
                             const dash::mpd::IRepresentation &representation);
 
 private:
-    using initialiation_segments_table =
-        std::map<gsl::not_null<const dash::mpd::IRepresentation *>, std::shared_ptr<media::object>>;
+    using initialization_segments_table =
+        std::map<gsl::not_null<const dash::mpd::IRepresentation *>, std::shared_ptr<data::object>>;
 
     std::uint32_t calculate_segment_offset() const;
     void download_initialization_segment(const dash::mpd::IRepresentation &representation);
@@ -52,13 +52,13 @@ private:
     gsl::not_null<const dash::mpd::IPeriod *> period_;
     gsl::not_null<const dash::mpd::IAdaptationSet *> adaptation_set_;
     gsl::not_null<const dash::mpd::IRepresentation *> representation_;
-    initialiation_segments_table initialization_segments_;
+    initialization_segments_table initialization_segments_;
     std::shared_ptr<mpd::adaptation_set_stream> adaptation_set_stream_;
     std::shared_ptr<mpd::representation_stream> representation_stream_;
     std::uint32_t segment_number_ = 0;
     std::uint32_t position_in_milliseconds_ = 0;
     std::uint32_t segment_offset_ = 0;
-    media::buffer buffer_;
+    data::buffer buffer_;
     std::thread buffering_thread_;
     std::atomic<bool> is_buffering_ = false;
 };

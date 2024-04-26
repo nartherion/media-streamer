@@ -5,4 +5,4 @@ target_include_directories(${PROJECT_NAME} INTERFACE ${CMAKE_SOURCE_DIR}/media-s
 target_link_libraries(${PROJECT_NAME}
     INTERFACE
     spdlog::spdlog
-    fmt::fmt)
+    Microsoft.GSL::GSL)

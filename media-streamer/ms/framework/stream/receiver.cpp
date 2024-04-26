@@ -47,7 +47,7 @@ void receiver::stop()
     }
 }
 
-std::shared_ptr<media::object> receiver::get_next_segment()
+std::shared_ptr<data::object> receiver::get_next_segment()
 {
     if (segment_number_ >= representation_stream_->get_size())
     {
@@ -58,13 +58,13 @@ std::shared_ptr<media::object> receiver::get_next_segment()
             representation_stream_->get_media_segment(segment_number_ + segment_offset_))
     {
         ++segment_number_;
-        return std::make_shared<media::object>(segment, *representation_);
+        return std::make_shared<data::object>(segment, *representation_);
     }
 
     return {};
 }
 
-std::shared_ptr<media::object> receiver::get_segment(const std::uint32_t segment_number)
+std::shared_ptr<data::object> receiver::get_segment(const std::uint32_t segment_number)
 {
     if (segment_number >= representation_stream_->get_size())
     {
@@ -74,23 +74,23 @@ std::shared_ptr<media::object> receiver::get_segment(const std::uint32_t segment
     if (const std::shared_ptr<dash::mpd::ISegment> segment =
             representation_stream_->get_media_segment(segment_number + segment_offset_))
     {
-        return std::make_shared<media::object>(segment, *representation_);
+        return std::make_shared<data::object>(segment, *representation_);
     }
 
     return {};
 }
 
-std::shared_ptr<media::object> receiver::get_initialization_segment()
+std::shared_ptr<data::object> receiver::get_initialization_segment()
 {
     if (const std::shared_ptr<dash::mpd::ISegment> segment = representation_stream_->get_initialization_segment())
     {
-        return std::make_shared<media::object>(segment, *representation_);
+        return std::make_shared<data::object>(segment, *representation_);
     }
 
     return {};
 }
 
-std::shared_ptr<media::object> receiver::find_initialization_segment(const dash::mpd::IRepresentation &representation)
+std::shared_ptr<data::object> receiver::find_initialization_segment(const dash::mpd::IRepresentation &representation)
 {
     const auto representation_pointer = gsl::make_not_null(&representation);
     if (initialization_segments_.contains(representation_pointer))
@@ -174,7 +174,7 @@ void receiver::download_initialization_segment(const dash::mpd::IRepresentation 
         return;
     }
 
-    if (const std::shared_ptr<media::object> initialization_segment = get_initialization_segment())
+    if (const std::shared_ptr<data::object> initialization_segment = get_initialization_segment())
     {
         initialization_segment->start_download();
         initialization_segments_[representation_pointer] = initialization_segment;
@@ -184,7 +184,7 @@ void receiver::download_initialization_segment(const dash::mpd::IRepresentation 
 void receiver::do_buffering()
 {
     download_initialization_segment(*representation_);
-    std::shared_ptr<media::object> segment = get_next_segment();
+    std::shared_ptr<data::object> segment = get_next_segment();
     while (segment && is_buffering_.load())
     {
         segment->start_download();

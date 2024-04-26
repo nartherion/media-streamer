@@ -13,7 +13,7 @@
 #include <IDownloadObserver.h>
 #include <IDASHMetrics.h>
 
-namespace ms::framework::media
+namespace ms::framework::data
 {
 
 class object : public dash::network::IDownloadObserver, public dash::metrics::IDASHMetrics
@@ -44,4 +44,4 @@ private:
     mutable std::condition_variable state_cv_;
 };
 
-} // namespace ms::framework::media
+} // namespace ms::framework::data

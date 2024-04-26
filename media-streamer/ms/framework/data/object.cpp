@@ -1,6 +1,6 @@
-#include <ms/framework/media/object.hpp>
+#include <ms/framework/data/object.hpp>
 
-namespace ms::framework::media
+namespace ms::framework::data
 {
 
 object::object(const std::shared_ptr<dash::mpd::ISegment> segment, const dash::mpd::IRepresentation &representation)
@@ -77,4 +77,4 @@ const std::vector<dash::metrics::IHTTPTransaction *> &object::GetHTTPTransaction
     return segment_->GetHTTPTransactionList();
 }
 
-} // namespace ms::framework::media
+} // namespace ms::framework::data

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ms/framework/media/object.hpp>
+#include <ms/framework/data/object.hpp>
 
 #include <cstdint>
 
@@ -9,7 +9,7 @@
 #include <mutex>
 #include <condition_variable>
 
-namespace ms::framework::media
+namespace ms::framework::data
 {
 
 class buffer
@@ -33,4 +33,4 @@ private:
     mutable std::condition_variable buffer_cv_;
 };
 
-} // namespace ms::framework::media
+} // namespace ms::framework::data

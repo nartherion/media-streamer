@@ -1,4 +1,4 @@
-project(ms-mpd)
+project(ms-framework-mpd)
 
 add_library(${PROJECT_NAME}
     SHARED

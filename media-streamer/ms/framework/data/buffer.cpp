@@ -1,8 +1,8 @@
-#include <ms/framework/media/buffer.hpp>
+#include <ms/framework/data/buffer.hpp>
 
 #include <cassert>
 
-namespace ms::framework::media
+namespace ms::framework::data
 {
 
 buffer::buffer(const std::uint32_t capacity)
@@ -89,4 +89,4 @@ std::uint32_t buffer::capacity() const
     return capacity_;
 }
 
-} // namespace ms::framework::media
+} // namespace ms::framework::data

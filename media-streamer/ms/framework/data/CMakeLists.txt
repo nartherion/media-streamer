@@ -1,4 +1,4 @@
-project(ms-media)
+project(ms-framework-data)
 
 add_library(${PROJECT_NAME}
     SHARED
