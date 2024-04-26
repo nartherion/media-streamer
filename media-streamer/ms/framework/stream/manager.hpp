@@ -1,9 +1,9 @@
 #pragma once
 
-namespace ms::framework::media
+namespace ms::framework::stream
 {
 
 class manager
 {};
 
-} // ms::framework::media
+} // ms::framework::stream

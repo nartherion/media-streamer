@@ -15,8 +15,8 @@
 #include <ms/av/codec_context.hpp>
 #include <ms/av/frame.hpp>
 #include <ms/av/packet.hpp>
+#include <ms/framework/data/packet_provider.hpp>
 #include <ms/decoder/frame_acceptor.hpp>
-#include <ms/decoder/packet_provider.hpp>
 
 #include <vector>
 #include <optional>
@@ -27,7 +27,7 @@ namespace ms::media
 class decoder
 {
 public:
-    static std::optional<decoder> create(frame_acceptor &acceptor, packet_provider &provider);
+    static std::optional<decoder> create(frame_acceptor &acceptor, framework::data::packet_provider &provider);
 
     void decode();
 

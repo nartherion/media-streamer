@@ -4,7 +4,7 @@
 
 #include <span>
 
-namespace ms::media
+namespace ms::framework::data
 {
 
 class packet_provider
@@ -15,4 +15,4 @@ public:
     virtual ~packet_provider() = default;
 };
 
-} // namespace ms::media
+} // namespace ms::framework::data

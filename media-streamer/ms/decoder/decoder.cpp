@@ -11,14 +11,14 @@ namespace
 
 static int read_packet(void *const opaque, std::uint8_t *const buffer, const int buffer_size)
 {
-    packet_provider *const provider = reinterpret_cast<packet_provider *>(opaque);
+    auto *const provider = reinterpret_cast<framework::data::packet_provider *>(opaque);
     const auto buffer_view = std::span(reinterpret_cast<std::byte *>(buffer), static_cast<std::size_t>(buffer_size));
     return provider->read_packet(buffer_view);
 }
 
 } // namespace
 
-std::optional<decoder> decoder::create(frame_acceptor &acceptor, packet_provider &provider)
+std::optional<decoder> decoder::create(frame_acceptor &acceptor, framework::data::packet_provider &provider)
 {
     constexpr int buffer_size = 1 << 15;
     auto *const opaque = reinterpret_cast<void *>(&provider);

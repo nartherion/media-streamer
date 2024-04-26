@@ -8,11 +8,11 @@ class immobile
 public:
     immobile() = default;
 
-    immobile(const immobile &) = delete;
-    immobile &operator=(const immobile &) = delete;
+    immobile(const immobile &instance) = delete;
+    immobile &operator=(const immobile &instance) = delete;
 
-    immobile(immobile &&) = delete;
-    immobile &operator=(immobile &&) = delete;
+    immobile(immobile &&instance) = delete;
+    immobile &operator=(immobile &&instance) = delete;
 };
 
 } // ms
