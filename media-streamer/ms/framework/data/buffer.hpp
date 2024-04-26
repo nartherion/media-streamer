@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ms/common/immobile.hpp>
 #include <ms/framework/data/object.hpp>
 
 #include <cstdint>
@@ -12,7 +13,7 @@
 namespace ms::framework::data
 {
 
-class buffer
+class buffer : public immobile
 {
 public:
     buffer(std::uint32_t capacity);

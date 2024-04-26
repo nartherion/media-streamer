@@ -1,5 +1,5 @@
 #include <ms/av/format_context.hpp>
-#include <ms/av/utils.hpp>
+#include <ms/av/error.hpp>
 
 extern "C"
 {
@@ -13,7 +13,7 @@ extern "C"
 namespace ms::av
 {
 
-std::optional<format_context> format_context::create(const int buffer_size, void *const opaque,
+std::optional<format_context> format_context::create(const int buffer_size, const gsl::not_null<void *> opaque,
                                                      const read_packet_callback callback)
 {
     auto *const buffer = reinterpret_cast<std::uint8_t *>(av_malloc(static_cast<std::size_t>(buffer_size)));

@@ -9,7 +9,6 @@ find_package(Microsoft.GSL 4.0.0 REQUIRED)
 find_package(spdlog 1.9.2 REQUIRED)
 find_package(Libav REQUIRED)
 
-include(cmake/common_interface.cmake)
 include(cmake/compiler_warnings.cmake)
 add_compile_options(${COMPILER_WARNINGS})
 

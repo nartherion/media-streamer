@@ -1,7 +1,8 @@
 #pragma once
 
+#include <ms/common/immobile.hpp>
+
 #include <cstddef>
-#include <cstdint>
 
 #include <mutex>
 #include <condition_variable>
@@ -16,7 +17,7 @@
 namespace ms::framework::data
 {
 
-class object : public dash::network::IDownloadObserver, public dash::metrics::IDASHMetrics
+class object : public immobile, public dash::network::IDownloadObserver, public dash::metrics::IDASHMetrics
 {
 public:
     object(std::shared_ptr<dash::mpd::ISegment> segment, const dash::mpd::IRepresentation &representation);

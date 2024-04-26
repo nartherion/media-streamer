@@ -10,6 +10,8 @@ extern "C"
 #include <memory>
 #include <optional>
 
+#include <gsl/pointers>
+
 namespace ms::av
 {
 
@@ -18,7 +20,7 @@ class format_context
 public:
     using read_packet_callback = int (*)(void *, std::uint8_t *, int);
 
-    static std::optional<format_context> create(int buffer_size, void *opaque, read_packet_callback);
+    static std::optional<format_context> create(int buffer_size, gsl::not_null<void *> opaque, read_packet_callback);
 
     AVFormatContext *native();
 

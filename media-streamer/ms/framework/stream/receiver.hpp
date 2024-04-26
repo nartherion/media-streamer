@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ms/common/immobile.hpp>
 #include <ms/framework/mpd/adaptation_set_stream.hpp>
 #include <ms/framework/mpd/representation_stream.hpp>
 #include <ms/framework/data/buffer.hpp>
@@ -20,7 +21,7 @@
 namespace ms::framework::stream
 {
 
-class receiver
+class receiver : public immobile
 {
 public:
     receiver(const dash::mpd::IMPD &mpd, std::uint32_t buffer_capacity);
