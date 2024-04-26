@@ -5,13 +5,13 @@
 namespace ms::framework::data
 {
 
-buffer::buffer(const std::uint32_t capacity)
+buffer::buffer(const std::size_t capacity)
     : capacity_(capacity)
 {}
 
 buffer::~buffer()
 {
-    clear();
+    set_eos();
 }
 
 bool buffer::push(const std::shared_ptr<object> o)
@@ -55,15 +55,14 @@ std::shared_ptr<object> buffer::pop()
     return o;
 }
 
-std::uint32_t buffer::size() const
-{
-    std::scoped_lock lock(buffer_mutex_);
-    return static_cast<std::uint32_t>(objects_.size());
-}
-
 void buffer::set_eos()
 {
     std::scoped_lock lock(buffer_mutex_);
+    if (is_eos_)
+    {
+        return;
+    }
+
     while (!objects_.empty())
     {
         objects_.pop();
@@ -71,22 +70,6 @@ void buffer::set_eos()
 
     is_eos_ = true;
     buffer_cv_.notify_all();
-}
-
-void buffer::clear()
-{
-    std::scoped_lock lock(buffer_mutex_);
-    while (!objects_.empty())
-    {
-        objects_.pop();
-    }
-
-    buffer_cv_.notify_all();
-}
-
-std::uint32_t buffer::capacity() const
-{
-    return capacity_;
 }
 
 } // namespace ms::framework::data

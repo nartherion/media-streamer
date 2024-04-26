@@ -5,54 +5,77 @@
 namespace ms::framework::data
 {
 
-std::optional<decoder> decoder::create_and_start(const std::shared_ptr<object> initialization_segment,
-                                                 const std::shared_ptr<object> media_segment,
-                                                 decoder_events_handler &events_handler)
-{
-    decoder instance(initialization_segment, media_segment, events_handler);
-    if (instance.initialize_decoding_thread())
-    {
-        SPDLOG_ERROR("Failed to initialize decoding thread");
-        return instance;
-    }
-
-    return {};
-}
-
-decoder::decoder(const std::shared_ptr<object> initialization_segment, const std::shared_ptr<object> media_segment,
-                 decoder_events_handler &events_handler)
-    : initialization_segment_(initialization_segment),
-      media_segment_(media_segment),
+decoder::decoder(data::buffer &buffer, decoder_events_handler &events_handler)
+    : buffer_(buffer),
       events_handler_(events_handler)
 {}
 
-void decoder::decode(media::decoder media_decoder)
+decoder::~decoder()
 {
-    media_decoder.decode();
+    stop();
+}
+
+bool decoder::start()
+{
+    if (is_decoding_.load())
+    {
+        return false;
+    }
+
+    is_decoding_.store(true);
+    decoding_thread_ = std::thread([this] { do_decoding(); });
+    return true;
+}
+
+void decoder::stop()
+{
+    if (!is_decoding_.load())
+    {
+        return;
+    }
+
+    is_decoding_.store(false);
+    if (decoding_thread_.joinable())
+    {
+        decoding_thread_.join();
+    }
 }
 
 int decoder::read_packet(std::span<std::byte> buffer)
 {
-    if (!initialization_segment_peeked_)
+    if (initialization_segment_)
     {
-        initialization_segment_peeked_ = true;
-        return initialization_segment_->peek(buffer);
+        return std::exchange(initialization_segment_, {})->peek(buffer);
     }
 
     return media_segment_->read(buffer);
 }
 
-bool decoder::initialize_decoding_thread()
+void decoder::do_decoding()
 {
-    std::optional<media::decoder> media_decoder = media::decoder::create(events_handler_, *this);
-    if (!media_decoder.has_value())
+    while (is_decoding_.load())
     {
-        SPDLOG_ERROR("Failed to create media decoder");
-        return false;
-    }
+        media_segment_ = events_handler_.get_next_segment();
+        if (!media_segment_)
+        {
+            continue;
+        }
 
-    decoding_thread_ = std::jthread(decode, std::move(media_decoder.value()));
-    return true;
+        initialization_segment_ = events_handler_.find_initialization_segment(media_segment_->get_representation());
+        if (!initialization_segment_)
+        {
+            continue;
+        }
+
+        std::optional<media::decoder> media_decoder = media::decoder::create(events_handler_, *this);
+        if (!media_decoder.has_value())
+        {
+            SPDLOG_ERROR("Failed to create media decoder");
+            continue;
+        }
+
+        media_decoder->decode();
+    }
 }
 
 } // namespace ms::framework::data

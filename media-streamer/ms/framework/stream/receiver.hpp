@@ -10,6 +10,8 @@
 #include <map>
 #include <mutex>
 #include <atomic>
+#include <optional>
+#include <memory>
 
 #include <gsl/pointers>
 
@@ -24,43 +26,42 @@ namespace ms::framework::stream
 class receiver : public immobile
 {
 public:
-    receiver(const dash::mpd::IMPD &mpd, std::uint32_t buffer_capacity);
+    receiver(const dash::mpd::IMPD &mpd, std::size_t buffer_size);
     ~receiver();
 
     bool start();
     void stop();
-    std::shared_ptr<data::object> get_next_segment();
-    std::shared_ptr<data::object> get_segment(std::uint32_t segment_number);
-    std::shared_ptr<data::object> get_initialization_segment();
-    std::shared_ptr<data::object> find_initialization_segment(const dash::mpd::IRepresentation &representation);
-    std::uint32_t get_position() const;
-    void set_position(std::uint32_t segment_number);
-    void set_position_in_milliseconds(std::uint32_t milliseconds);
-    const dash::mpd::IRepresentation &get_representation() const;
     void set_representation(const dash::mpd::IPeriod &period, const dash::mpd::IAdaptationSet &adaptation_set,
                             const dash::mpd::IRepresentation &representation);
+    std::shared_ptr<data::object> get_front_segment();
+    std::shared_ptr<data::object> find_initialization_segment(const dash::mpd::IRepresentation &representation) const;
 
 private:
-    using initialization_segments_table =
-        std::map<gsl::not_null<const dash::mpd::IRepresentation *>, std::shared_ptr<data::object>>;
+    using period_pointer = gsl::not_null<const dash::mpd::IPeriod *>;
+    using adaptation_set_pointer = gsl::not_null<const dash::mpd::IAdaptationSet *>;
+    using representation_pointer = gsl::not_null<const dash::mpd::IRepresentation *>;
+    using initialization_segments_table = std::map<representation_pointer, std::shared_ptr<data::object>>;
 
+    std::shared_ptr<data::object> get_next_segment();
+    std::shared_ptr<data::object> get_initialization_segment();
     std::uint32_t calculate_segment_offset() const;
-    void download_initialization_segment(const dash::mpd::IRepresentation &representation);
-    void initialization_segment_exists(const dash::mpd::IRepresentation &representation);
+    void download_initialization_segment();
     void do_buffering();
 
     const dash::mpd::IMPD &mpd_;
-    gsl::not_null<const dash::mpd::IPeriod *> period_;
-    gsl::not_null<const dash::mpd::IAdaptationSet *> adaptation_set_;
-    gsl::not_null<const dash::mpd::IRepresentation *> representation_;
+    const std::size_t buffer_size_;
+    std::optional<data::buffer> buffer_;
     initialization_segments_table initialization_segments_;
-    std::shared_ptr<mpd::adaptation_set_stream> adaptation_set_stream_;
+    period_pointer period_;
+    adaptation_set_pointer adaptation_set_;
+    representation_pointer representation_;
+    std::optional<mpd::adaptation_set_stream> adaptation_set_stream_;
     std::shared_ptr<mpd::representation_stream> representation_stream_;
     std::uint32_t segment_number_ = 0;
-    std::uint32_t position_in_milliseconds_ = 0;
     std::uint32_t segment_offset_ = 0;
-    data::buffer buffer_;
     std::thread buffering_thread_;
+    mutable std::mutex monitor_mutex_;
+    std::atomic<bool> settings_updated_ = true;
     std::atomic<bool> is_buffering_ = false;
 };
 
