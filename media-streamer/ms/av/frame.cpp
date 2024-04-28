@@ -3,9 +3,8 @@
 namespace ms::av
 {
 
-frame::frame(const codec_context codec)
-    : codec_context_(codec),
-      av_frame_(av_frame_alloc(), free_av_frame)
+frame::frame()
+    : av_frame_(av_frame_alloc(), free_av_frame)
 {}
 
 AVFrame *frame::native()
@@ -13,7 +12,12 @@ AVFrame *frame::native()
     return av_frame_.get();
 }
 
-codec_context frame::codec() const
+void frame::set_codec(codec_context codec)
+{
+    codec_context_ = codec;
+}
+
+std::optional<codec_context> frame::get_codec() const
 {
     return codec_context_;
 }

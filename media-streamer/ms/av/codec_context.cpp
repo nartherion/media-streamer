@@ -42,6 +42,11 @@ AVCodecContext *codec_context::native()
     return av_codec_context_.get();
 }
 
+const AVCodecContext *codec_context::native() const
+{
+    return av_codec_context_.get();
+}
+
 const AVStream *codec_context::stream() const
 {
     return av_stream_;

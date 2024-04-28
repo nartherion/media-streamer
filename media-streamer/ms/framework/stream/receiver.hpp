@@ -3,7 +3,8 @@
 #include <ms/common/immobile.hpp>
 #include <ms/framework/mpd/adaptation_set_stream.hpp>
 #include <ms/framework/mpd/representation_stream.hpp>
-#include <ms/framework/data/buffer.hpp>
+#include <ms/common/buffer.hpp>
+#include <ms/framework/data/decoder_events_handler.hpp>
 
 #include <cstdint>
 
@@ -23,7 +24,7 @@
 namespace ms::framework::stream
 {
 
-class receiver : public immobile
+class receiver : public common::immobile, public data::decoder_events_handler
 {
 public:
     receiver(const dash::mpd::IMPD &mpd, std::size_t buffer_size);
@@ -33,14 +34,16 @@ public:
     void stop();
     void set_representation(const dash::mpd::IPeriod &period, const dash::mpd::IAdaptationSet &adaptation_set,
                             const dash::mpd::IRepresentation &representation);
-    std::shared_ptr<data::object> get_front_segment();
-    std::shared_ptr<data::object> find_initialization_segment(const dash::mpd::IRepresentation &representation) const;
+    std::shared_ptr<data::object> get_oldest_segment() override;
+    std::shared_ptr<data::object> find_initialization_segment(
+        const dash::mpd::IRepresentation &representation) const override;
 
 private:
     using period_pointer = gsl::not_null<const dash::mpd::IPeriod *>;
     using adaptation_set_pointer = gsl::not_null<const dash::mpd::IAdaptationSet *>;
     using representation_pointer = gsl::not_null<const dash::mpd::IRepresentation *>;
     using initialization_segments_table = std::map<representation_pointer, std::shared_ptr<data::object>>;
+    using object_buffer = common::buffer<std::shared_ptr<data::object>>;
 
     std::shared_ptr<data::object> get_next_segment();
     std::shared_ptr<data::object> get_initialization_segment();
@@ -50,7 +53,7 @@ private:
 
     const dash::mpd::IMPD &mpd_;
     const std::size_t buffer_size_;
-    std::optional<data::buffer> buffer_;
+    std::optional<object_buffer> buffer_;
     initialization_segments_table initialization_segments_;
     period_pointer period_;
     adaptation_set_pointer adaptation_set_;

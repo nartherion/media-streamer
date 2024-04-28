@@ -21,6 +21,7 @@ public:
                                                const AVStream *stream);
 
     AVCodecContext *native();
+    const AVCodecContext *native() const;
     const AVStream *stream() const;
 
 private:

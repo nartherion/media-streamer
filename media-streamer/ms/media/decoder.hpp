@@ -16,7 +16,7 @@
 #include <ms/av/frame.hpp>
 #include <ms/av/packet.hpp>
 #include <ms/framework/data/packet_provider.hpp>
-#include <ms/decoder/frame_acceptor.hpp>
+#include <ms/media/frame_acceptor.hpp>
 
 #include <vector>
 #include <optional>

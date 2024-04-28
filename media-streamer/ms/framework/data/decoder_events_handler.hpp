@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ms/decoder/frame_acceptor.hpp>
+#include <ms/media/frame_acceptor.hpp>
 #include <ms/framework/data/object.hpp>
 
 #include <IRepresentation.h>
@@ -8,13 +8,13 @@
 namespace ms::framework::data
 {
 
-class decoder_events_handler : public media::frame_acceptor
+class decoder_events_handler
 {
 public:
-    virtual void on_decoding_finished() = 0;
     virtual std::shared_ptr<data::object> find_initialization_segment(
-        const dash::mpd::IRepresentation &representation) = 0;
-    virtual std::shared_ptr<data::object> get_next_segment() = 0;
+        const dash::mpd::IRepresentation &representation) const = 0;
+    virtual std::shared_ptr<data::object> get_oldest_segment() = 0;
+    virtual ~decoder_events_handler() = default;
 };
 
 } // namespace ms::framework::data

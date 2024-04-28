@@ -1,5 +1,14 @@
-#include <ms/decoder/decoder.hpp>
+#include <ms/media/decoder.hpp>
 #include <ms/av/error.hpp>
+
+extern "C"
+{
+
+#include <libavutil/pixdesc.h>
+#include <libavutil/imgutils.h>
+#include <libswscale/swscale.h>
+
+} // extern "C"
 
 #include <spdlog/spdlog.h>
 
@@ -14,6 +23,33 @@ static int read_packet(void *const opaque, std::uint8_t *const buffer, const int
     auto *const provider = reinterpret_cast<framework::data::packet_provider *>(opaque);
     const auto buffer_view = std::span(reinterpret_cast<std::byte *>(buffer), static_cast<std::size_t>(buffer_size));
     return provider->read_packet(buffer_view);
+}
+
+av::frame to_rgb(av::frame frame)
+{
+    const AVFrame *source_frame = frame.native();
+    const auto source_format = static_cast<AVPixelFormat>(source_frame->format);
+
+    const AVPixelFormat destination_format = AV_PIX_FMT_RGB24;
+    const int width = source_frame->width;
+    const int height = source_frame->height;
+
+    av::frame rgb_frame;
+    AVFrame *destination_frame = rgb_frame.native();
+    destination_frame->width = width;
+    destination_frame->height = height;
+    destination_frame->format = destination_format;
+
+    av_image_alloc(destination_frame->data, destination_frame->linesize, width, height, destination_format, 1);
+
+    SwsContext *const conversion = sws_getContext(width, height, source_format,
+                                                  width, height, destination_format,
+                                                  SWS_BICUBIC, NULL, NULL, NULL);
+    sws_scale(conversion, source_frame->data, source_frame->linesize, 0, height,
+              destination_frame->data, destination_frame->linesize);
+    sws_freeContext(conversion);
+
+    return rgb_frame;
 }
 
 } // namespace
@@ -64,11 +100,18 @@ std::vector<av::codec_context> decoder::make_codecs()
 
 void decoder::notify(av::frame frame)
 {
-    const AVMediaType codec_type = frame.codec().native()->codec_type;
+    const std::optional<av::codec_context> codec = frame.get_codec();
+    if (!codec.has_value())
+    {
+        SPDLOG_ERROR("Failed to notify frame acceptor: Codec is missing");
+        return;
+    }
+
+    const AVMediaType codec_type = codec->native()->codec_type;
     switch (codec_type)
     {
     case AVMEDIA_TYPE_VIDEO:
-        notify_video(std::move(frame));
+        notify_video(to_rgb(std::move(frame)));
         break;
 
     case AVMEDIA_TYPE_AUDIO:
@@ -76,7 +119,8 @@ void decoder::notify(av::frame frame)
         break;
 
     default:
-        SPDLOG_ERROR("Unexpected codec type: {}", av_get_media_type_string(codec_type));
+        SPDLOG_ERROR("Failed to notify frame acceptor: Codec type {} is not supported",
+                     av_get_media_type_string(codec_type));
         break;
     }
 }
@@ -84,12 +128,18 @@ void decoder::notify(av::frame frame)
 void decoder::notify_video(av::frame frame)
 {
     AVFrame *av_frame = frame.native();
+    const auto format = static_cast<AVPixelFormat>(av_frame->format);
+    if (format != AV_PIX_FMT_RGB24)
+    {
+        SPDLOG_ERROR("Failed to notify frame acceptor: Format {} is not supported", av_get_pix_fmt_name(format));
+        return;
+    }
 
     const video_frame vf
     {
         .width_ = av_frame->width,
         .height_ = av_frame->height,
-        .format_ = av_frame->format == AV_PIX_FMT_YUV420P ? pixel_format::yuv420p : pixel_format::yuv422p,
+        .format_ = format,
         .linesize_ = av_frame->linesize,
         .data_ = const_cast<const std::uint8_t **>(reinterpret_cast<std::uint8_t **>(av_frame->data))
     };
@@ -149,16 +199,20 @@ std::optional<av::codec_context> decoder::find_codec(const int index)
 
 bool decoder::decode_media(const av::packet packet, av::frame &frame)
 {
-    av::codec_context codec = frame.codec();
+    std::optional<av::codec_context> codec = frame.get_codec();
+    if (!codec.has_value())
+    {
+        SPDLOG_ERROR("Failed to decode media: Codec is missing");
+        return false;
+    }
 
-    if (const int error = avcodec_send_packet(codec.native(), packet.native()); error < 0)
+    if (const int error = avcodec_send_packet(codec->native(), packet.native()); error < 0)
     {
         SPDLOG_ERROR("Failed to send packet: {}", av::make_error_string(error));
         return false;
     }
 
-
-    if (const int error = avcodec_receive_frame(codec.native(), frame.native()); error != 0 && error != AVERROR(EAGAIN))
+    if (const int error = avcodec_receive_frame(codec->native(), frame.native()); error != 0 && error != AVERROR(EAGAIN))
     {
         SPDLOG_ERROR("Failed to receive frame: {}", av::make_error_string(error));
         return false;
@@ -176,7 +230,8 @@ std::optional<av::frame> decoder::decode_frame(const av::packet packet)
         return {};
     }
 
-    av::frame frame(codec.value());
+    av::frame frame;
+    frame.set_codec(codec.value());
     if (decode_media(packet, frame))
     {
         return frame;

@@ -82,7 +82,7 @@ void receiver::set_representation(const dash::mpd::IPeriod &period, const dash::
     settings_updated_.store(true);
 }
 
-std::shared_ptr<data::object> receiver::get_front_segment()
+std::shared_ptr<data::object> receiver::get_oldest_segment()
 {
     if (is_buffering_.load())
     {

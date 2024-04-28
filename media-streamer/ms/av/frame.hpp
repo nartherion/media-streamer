@@ -17,15 +17,16 @@ namespace ms::av
 class frame
 {
 public:
-    frame(codec_context codec);
+    frame();
 
     AVFrame *native();
-    codec_context codec() const;
+    void set_codec(codec_context codec);
+    std::optional<codec_context> get_codec() const;
 
 private:
     static void free_av_frame(AVFrame *av_frame);
 
-    const codec_context codec_context_;
+    std::optional<codec_context> codec_context_;
     std::unique_ptr<AVFrame, decltype(&free_av_frame)> av_frame_;
 };
 

@@ -5,7 +5,4 @@ add_library(${PROJECT_NAME}
     receiver.cpp
     manager.cpp)
 
-target_link_libraries(${PROJECT_NAME}
-    PUBLIC
-    ms-common
-    libdash::libdash)
+target_link_libraries(${PROJECT_NAME} PUBLIC ms-framework-data)

@@ -1,20 +1,49 @@
-#include <ms/framework/data/buffer.hpp>
+#pragma once
 
+#include <ms/common/immobile.hpp>
+
+#include <cstdint>
 #include <cassert>
 
-namespace ms::framework::data
+#include <queue>
+#include <mutex>
+#include <condition_variable>
+
+namespace ms::common
 {
 
-buffer::buffer(const std::size_t capacity)
+template <typename T>
+class buffer : public immobile
+{
+public:
+    buffer(std::size_t capacity);
+    ~buffer();
+
+    bool push(T object);
+    T pop();
+    void set_eos();
+
+private:
+    const std::size_t capacity_;
+    std::queue<T> objects_;
+    bool is_eos_ = false;
+    std::mutex buffer_mutex_;
+    std::condition_variable buffer_cv_;
+};
+
+template <typename T>
+buffer<T>::buffer(const std::size_t capacity)
     : capacity_(capacity)
 {}
 
-buffer::~buffer()
+template <typename T>
+buffer<T>::~buffer()
 {
     set_eos();
 }
 
-bool buffer::push(const std::shared_ptr<object> o)
+template <typename T>
+bool buffer<T>::push(const T object)
 {
     std::unique_lock lock(buffer_mutex_);
 
@@ -29,12 +58,13 @@ bool buffer::push(const std::shared_ptr<object> o)
     }
 
     assert(objects_.size() < capacity_ && !is_eos_);
-    objects_.push(o);
+    objects_.push(object);
     buffer_cv_.notify_all();
     return true;
 }
 
-std::shared_ptr<object> buffer::pop()
+template <typename T>
+T buffer<T>::pop()
 {
     std::unique_lock lock(buffer_mutex_);
 
@@ -45,17 +75,18 @@ std::shared_ptr<object> buffer::pop()
 
     if (is_eos_)
     {
-        return nullptr;
+        return {};
     }
 
     assert(!objects_.empty() && !is_eos_);
-    const std::shared_ptr<object> o = objects_.front();
+    const T object = objects_.front();
     objects_.pop();
     buffer_cv_.notify_all();
-    return o;
+    return object;
 }
 
-void buffer::set_eos()
+template <typename T>
+void buffer<T>::set_eos()
 {
     std::scoped_lock lock(buffer_mutex_);
     if (is_eos_)
@@ -72,4 +103,4 @@ void buffer::set_eos()
     buffer_cv_.notify_all();
 }
 
-} // namespace ms::framework::data
+} // namespace ms::common

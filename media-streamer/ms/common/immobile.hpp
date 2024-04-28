@@ -1,6 +1,6 @@
 #pragma once
 
-namespace ms
+namespace ms::common
 {
 
 class immobile
@@ -15,4 +15,4 @@ public:
     immobile &operator=(immobile &&instance) = delete;
 };
 
-} // ms
+} // ms::common

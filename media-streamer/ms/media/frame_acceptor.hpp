@@ -5,13 +5,11 @@
 namespace ms::media
 {
 
-enum class pixel_format { yuv420p = 0, yuv422p = 4 };
-
 struct video_frame
 {
     int width_ = 0;
     int height_ = 0;
-    pixel_format format_ = pixel_format::yuv420p;
+    int format_ = 0;
     int *linesize_ = nullptr;
     const std::uint8_t **data_ = nullptr;
 };

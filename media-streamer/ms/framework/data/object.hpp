@@ -17,7 +17,7 @@
 namespace ms::framework::data
 {
 
-class object : public immobile, public dash::network::IDownloadObserver, public dash::metrics::IDASHMetrics
+class object : public common::immobile, public dash::network::IDownloadObserver, public dash::metrics::IDASHMetrics
 {
 public:
     object(std::shared_ptr<dash::mpd::ISegment> segment, const dash::mpd::IRepresentation &representation);
