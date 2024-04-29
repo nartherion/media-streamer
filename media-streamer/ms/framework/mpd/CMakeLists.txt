@@ -2,6 +2,7 @@ project(ms-framework-mpd)
 
 add_library(${PROJECT_NAME}
     SHARED
+    time_utils.cpp
     abstract_representation_stream.cpp
     adaptation_set_stream.cpp
     segment_list_stream.cpp

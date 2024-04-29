@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.28)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
+set(MEDIA_STREAMER_ROOT ${CMAKE_SOURCE_DIR})
+set(CMAKE_MODULE_PATH "${MEDIA_STREAMER_ROOT}/cmake/modules")
 
 project(media-streamer)
 

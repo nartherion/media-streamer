@@ -79,6 +79,11 @@ void manager::stop()
     return;
 }
 
+const dash::mpd::IMPD *manager::get_mpd()
+{
+    return mpd_;
+}
+
 void manager::set_video_quality(const dash::mpd::IPeriod &period, const dash::mpd::IAdaptationSet &adaptation_set,
                                 const dash::mpd::IRepresentation &representation)
 {
@@ -179,10 +184,10 @@ void manager::do_render_video()
 {
     while (is_video_rendering_.load())
     {
-        if (const std::optional<media::video_frame> frame = video_stream_->get_video_frame())
+        if (const std::optional<av::frame> frame = video_stream_->get_video_frame())
         {
             renderer_.render(frame.value());
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000 / frame_rate));
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000 / frame_rate_));
         }
     }
 }
@@ -191,7 +196,7 @@ void manager::do_play_audio()
 {
     while (is_audio_playing_.load())
     {
-        if (const std::optional<media::audio_frame> frame = audio_stream_->get_audio_frame())
+        if (const std::optional<av::frame> frame = audio_stream_->get_audio_frame())
         {
             player_.play(frame.value());
         }

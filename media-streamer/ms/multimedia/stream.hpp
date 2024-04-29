@@ -19,18 +19,18 @@ public:
 
     bool start();
     void stop();
-    std::optional<media::video_frame> get_video_frame();
-    std::optional<media::audio_frame> get_audio_frame();
+    std::optional<av::frame> get_video_frame();
+    std::optional<av::frame> get_audio_frame();
     void set_representation(const dash::mpd::IPeriod &period, const dash::mpd::IAdaptationSet &adaptation_set,
                             const dash::mpd::IRepresentation &representation);
 
 private:
-    void accept(media::video_frame frame) override;
-    void accept(media::audio_frame frame) override;
+    void accept_video(av::frame frame) override;
+    void accept_audio(av::frame frame) override;
 
     framework::stream::manager manager_;
-    common::buffer<std::optional<media::video_frame>> video_frames_;
-    common::buffer<std::optional<media::audio_frame>> audio_frames_;
+    common::buffer<std::optional<av::frame>> video_frames_;
+    common::buffer<std::optional<av::frame>> audio_frames_;
 };
 
 } // namespace ms::multimedia

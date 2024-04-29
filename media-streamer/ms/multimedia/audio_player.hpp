@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ms/media/frame_acceptor.hpp>
+#include <ms/av/frame.hpp>
 
 namespace ms::multimedia
 {
@@ -8,7 +8,7 @@ namespace ms::multimedia
 class audio_player
 {
 public:
-    virtual void play(media::audio_frame frame);
+    virtual void play(av::frame frame);
     virtual ~audio_player() = default;
 };
 

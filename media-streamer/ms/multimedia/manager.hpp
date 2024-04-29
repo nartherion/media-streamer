@@ -23,7 +23,7 @@ public:
     bool initialize(std::string url);
     bool start();
     void stop();
-    const dash::mpd::IMPD &get_mpd();
+    const dash::mpd::IMPD *get_mpd();
     void set_video_quality(const dash::mpd::IPeriod &period, const dash::mpd::IAdaptationSet &adaptation_set,
                            const dash::mpd::IRepresentation &representation);
     void set_audio_quality(const dash::mpd::IPeriod &period, const dash::mpd::IAdaptationSet &adaptation_set,
@@ -52,7 +52,7 @@ private:
     std::optional<stream> video_stream_;
     const dash::mpd::IAdaptationSet *video_adaptation_set_ = nullptr;
     const dash::mpd::IRepresentation *video_representation_ = nullptr;
-    int frame_rate = 0;
+    int frame_rate_ = 0;
     std::thread video_renderer_thread_;
     std::atomic<bool> is_video_rendering_ = false;
     std::optional<stream> audio_stream_;

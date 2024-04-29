@@ -25,12 +25,12 @@ void stream::stop()
     manager_.stop();
 }
 
-std::optional<media::video_frame> stream::get_video_frame()
+std::optional<av::frame> stream::get_video_frame()
 {
     return video_frames_.pop();
 }
 
-std::optional<media::audio_frame> stream::get_audio_frame()
+std::optional<av::frame> stream::get_audio_frame()
 {
     return audio_frames_.pop();
 }
@@ -41,12 +41,12 @@ void stream::set_representation(const dash::mpd::IPeriod &period, const dash::mp
     manager_.set_representation(period, adaptation_set, representation);
 }
 
-void stream::accept(const media::video_frame frame)
+void stream::accept_video(const av::frame frame)
 {
     video_frames_.push(frame);
 }
 
-void stream::accept(const media::audio_frame frame)
+void stream::accept_audio(const av::frame frame)
 {
     audio_frames_.push(frame);
 }

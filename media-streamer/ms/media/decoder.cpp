@@ -111,11 +111,11 @@ void decoder::notify(av::frame frame)
     switch (codec_type)
     {
     case AVMEDIA_TYPE_VIDEO:
-        notify_video(to_rgb(std::move(frame)));
+        notify_video(to_rgb(frame));
         break;
 
     case AVMEDIA_TYPE_AUDIO:
-        notify_audio(std::move(frame));
+        notify_audio(frame);
         break;
 
     default:
@@ -135,30 +135,12 @@ void decoder::notify_video(av::frame frame)
         return;
     }
 
-    const video_frame vf
-    {
-        .width_ = av_frame->width,
-        .height_ = av_frame->height,
-        .format_ = format,
-        .linesize_ = av_frame->linesize,
-        .data_ = const_cast<const std::uint8_t **>(reinterpret_cast<std::uint8_t **>(av_frame->data))
-    };
-
-    acceptor_.accept(vf);
+    acceptor_.accept_video(frame);
 }
 
 void decoder::notify_audio(av::frame frame)
 {
-    AVFrame *av_frame = frame.native();
-
-    const audio_frame af
-    {
-        .linesize_ = av_frame->linesize[0],
-        .sample_rate_ = av_frame->sample_rate,
-        .channels_ = av_frame->channels
-    };
-
-    acceptor_.accept(af);
+    acceptor_.accept_audio(frame);
 }
 
 std::optional<av::packet> decoder::get_next_packet()
@@ -212,9 +194,12 @@ bool decoder::decode_media(const av::packet packet, av::frame &frame)
         return false;
     }
 
-    if (const int error = avcodec_receive_frame(codec->native(), frame.native()); error != 0 && error != AVERROR(EAGAIN))
+    if (const int error = avcodec_receive_frame(codec->native(), frame.native()); error != 0)
     {
-        SPDLOG_ERROR("Failed to receive frame: {}", av::make_error_string(error));
+        if (error != AVERROR(EAGAIN))
+        {
+            SPDLOG_ERROR("Failed to receive frame: {}", av::make_error_string(error));
+        }
         return false;
     }
 
@@ -246,7 +231,7 @@ void decoder::decode()
     {
         if (std::optional<av::frame> frame = decode_frame(packet.value()))
         {
-            notify(std::move(frame.value()));
+            notify(frame.value());
         }
     }
 }

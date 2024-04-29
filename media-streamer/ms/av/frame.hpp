@@ -24,10 +24,8 @@ public:
     std::optional<codec_context> get_codec() const;
 
 private:
-    static void free_av_frame(AVFrame *av_frame);
-
     std::optional<codec_context> codec_context_;
-    std::unique_ptr<AVFrame, decltype(&free_av_frame)> av_frame_;
+    std::shared_ptr<AVFrame> av_frame_;
 };
 
 } // namespace ms::av

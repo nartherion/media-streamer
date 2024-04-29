@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ms/media/frame_acceptor.hpp>
+#include <ms/av/frame.hpp>
 
 namespace ms::multimedia
 {
@@ -8,7 +8,7 @@ namespace ms::multimedia
 class video_renderer
 {
 public:
-    virtual void render(media::video_frame frame);
+    virtual void render(av::frame frame);
     virtual ~video_renderer() = default;
 };
 
