@@ -1,8 +1,6 @@
 #include <ms/framework/stream/manager.hpp>
 #include <ms/av/frame.hpp>
 
-#include <spdlog/spdlog.h>
-
 namespace ms::framework::stream
 {
 
@@ -11,9 +9,9 @@ namespace
 
 } // namespace
 
-manager::manager(const std::size_t buffer_size, media::frame_acceptor &acceptor, const dash::mpd::IMPD &mpd)
+manager::manager(const std::size_t buffer_size, const dash::mpd::IMPD &mpd, utils::frame_acceptor &acceptor)
     : receiver_(mpd, buffer_size),
-      decoder_(acceptor, receiver_)
+      decoder_(receiver_, acceptor)
 {}
 
 bool manager::start()

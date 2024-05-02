@@ -6,6 +6,7 @@
 #include <cassert>
 
 #include <queue>
+#include <optional>
 #include <mutex>
 #include <condition_variable>
 
@@ -43,7 +44,7 @@ buffer<T>::~buffer()
 }
 
 template <typename T>
-bool buffer<T>::push(const T object)
+bool buffer<T>::push(T object)
 {
     std::unique_lock lock(buffer_mutex_);
 
@@ -58,7 +59,7 @@ bool buffer<T>::push(const T object)
     }
 
     assert(objects_.size() < capacity_ && !is_eos_);
-    objects_.push(object);
+    objects_.push(std::move(object));
     buffer_cv_.notify_all();
     return true;
 }
@@ -79,7 +80,7 @@ T buffer<T>::pop()
     }
 
     assert(!objects_.empty() && !is_eos_);
-    const T object = objects_.front();
+    T object = std::move(objects_.front());
     objects_.pop();
     buffer_cv_.notify_all();
     return object;

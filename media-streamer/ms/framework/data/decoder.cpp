@@ -5,7 +5,7 @@
 namespace ms::framework::data
 {
 
-decoder::decoder(media::frame_acceptor &frame_acceptor, decoder_events_handler &events_handler)
+decoder::decoder(decoder_events_handler &events_handler, utils::frame_acceptor &frame_acceptor)
     : frame_acceptor_(frame_acceptor),
       events_handler_(events_handler)
 {}
@@ -67,7 +67,7 @@ void decoder::do_decoding()
             continue;
         }
 
-        std::optional<media::decoder> media_decoder = media::decoder::create(frame_acceptor_, *this);
+        std::optional<utils::decoder> media_decoder = utils::decoder::create(*this, frame_acceptor_);
         if (!media_decoder.has_value())
         {
             SPDLOG_ERROR("Failed to create media decoder");

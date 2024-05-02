@@ -20,12 +20,11 @@ public:
     frame();
 
     AVFrame *native();
-    void set_codec(codec_context codec);
-    std::optional<codec_context> get_codec() const;
 
 private:
-    std::optional<codec_context> codec_context_;
-    std::shared_ptr<AVFrame> av_frame_;
+    static void free_av_frame(AVFrame *av_frame);
+
+    std::unique_ptr<AVFrame, decltype(&free_av_frame)> av_frame_;
 };
 
 } // namespace ms::av

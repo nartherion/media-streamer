@@ -7,5 +7,5 @@ add_library(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
-    ms-media
+    ms-utils
     libdash::libdash)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ms/media/frame_acceptor.hpp>
+#include <ms/utils/frame_acceptor.hpp>
 #include <ms/framework/stream/receiver.hpp>
 #include <ms/framework/data/decoder.hpp>
 #include <ms/av/frame.hpp>
@@ -15,7 +15,7 @@ namespace ms::framework::stream
 class manager
 {
 public:
-    manager(std::size_t buffer_size, media::frame_acceptor &acceptor, const dash::mpd::IMPD &mpd);
+    manager(const std::size_t buffer_size, const dash::mpd::IMPD &mpd, utils::frame_acceptor &acceptor);
 
     bool start();
     void stop();

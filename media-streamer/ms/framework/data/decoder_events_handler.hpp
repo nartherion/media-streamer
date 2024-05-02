@@ -1,6 +1,5 @@
 #pragma once
 
-#include <ms/media/frame_acceptor.hpp>
 #include <ms/framework/data/object.hpp>
 
 #include <IRepresentation.h>

@@ -8,7 +8,7 @@ project(media-streamer)
 
 find_package(Microsoft.GSL 4.0.0 REQUIRED)
 find_package(spdlog 1.9.2 REQUIRED)
-find_package(Qt5 COMPONENTS Widgets Core Gui Multimedia MultimediaWidgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Core Gui Multimedia MultimediaWidgets OpenGL REQUIRED)
 find_package(Libav REQUIRED)
 
 include(cmake/compiler_warnings.cmake)
