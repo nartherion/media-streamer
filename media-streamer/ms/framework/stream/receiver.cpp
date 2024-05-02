@@ -41,6 +41,7 @@ void receiver::stop()
         return;
     }
 
+    buffer_->set_eos();
     is_buffering_.store(false);
     if (buffering_thread_.joinable())
     {

@@ -19,11 +19,14 @@ public:
     void stop();
 
 private:
+    using frame_buffer = common::buffer<std::optional<av::frame>>;
+
     void do_rendering();
     void accept(av::frame frame) override;
 
+    const std::size_t frame_buffer_size_;
     frame_renderer &frame_renderer_;
-    common::buffer<av::frame> frames_;
+    std::optional<frame_buffer> frames_;
     int frame_rate_ = 0;
     std::thread rendering_thread_;
     std::atomic<bool> is_rendering_ = false;
