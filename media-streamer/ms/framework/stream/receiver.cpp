@@ -170,6 +170,8 @@ void receiver::do_buffering()
 {
     while (const std::shared_ptr<data::object> segment = get_next_segment())
     {
+        download_initialization_segment();
+
         if (!is_buffering_.load())
         {
             break;

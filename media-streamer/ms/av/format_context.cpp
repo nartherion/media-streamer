@@ -26,7 +26,7 @@ std::optional<format_context> format_context::create(const int buffer_size, cons
 
     if (const int error = avformat_open_input(&av_format_context, "", NULL, NULL); error < 0)
     {
-        SPDLOG_ERROR("Failed to open input: {}", error);
+        SPDLOG_ERROR("Failed to open input: {}", make_error_string(error));
         return {};
     }
 

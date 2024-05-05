@@ -86,7 +86,6 @@ const dash::mpd::IMPD *manager::get_mpd()
     return mpd_;
 }
 
-
 void manager::set_configuration(const configuration c)
 {
     const auto &[period, video_stream, audio_stream] = configuration_.emplace(c);
@@ -111,8 +110,19 @@ void manager::start_video()
         video_stream_manager_.emplace(segment_buffer_size, *mpd_, video_presentation_manager_);
     }
 
-    video_presentation_manager_.start();
-    video_stream_manager_->start();
+    if (configuration_.has_value())
+    {
+        const dash::mpd::IPeriod &period = configuration_->period_;
+
+        if (const std::optional<configuration::stream> video_stream = configuration_->video_stream_)
+        {
+            const auto &[adaptation_set, representation] = video_stream.value();
+            video_stream_manager_->set_representation(period, adaptation_set, representation);
+
+            video_presentation_manager_.start();
+            video_stream_manager_->start();
+        }
+    }
 }
 
 void manager::start_audio()
@@ -122,8 +132,19 @@ void manager::start_audio()
         audio_stream_manager_.emplace(segment_buffer_size, *mpd_, audio_presentation_manager_);
     }
 
-    audio_presentation_manager_.start();
-    audio_stream_manager_->start();
+    if (configuration_.has_value())
+    {
+        const dash::mpd::IPeriod &period = configuration_->period_;
+
+        if (const std::optional<configuration::stream> audio_stream = configuration_->audio_stream_)
+        {
+            const auto &[adaptation_set, representation] = audio_stream.value();
+            audio_stream_manager_->set_representation(period, adaptation_set, representation);
+
+            audio_presentation_manager_.start();
+            audio_stream_manager_->start();
+        }
+    }
 }
 
 void manager::stop_video()

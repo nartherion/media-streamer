@@ -133,17 +133,15 @@ void player::on_download_mpd_button_clicked()
 {
     if (media_manager_.initialize(get_url()))
     {
-        update_gui(media_manager_.get_mpd());
+        const dash::mpd::IMPD *mpd = media_manager_.get_mpd();
+        update_gui(mpd);
+        update_configuration(mpd);
     }
 }
 
 void player::on_start_button_clicked()
 {
-    if (const std::optional<media::manager::configuration> configuration = make_configuration(media_manager_.get_mpd()))
-    {
-        media_manager_.set_configuration(configuration.value());
-        media_manager_.start();
-    }
+    media_manager_.start();
 }
 
 void player::on_stop_button_clicked()
@@ -334,7 +332,8 @@ void player::update_configuration(const dash::mpd::IMPD *mpd)
     if (const dash::mpd::IRepresentation *video_representation =
             get_video_representation(get_video_adaptation_set(get_period(mpd))))
     {
-        gl_renderer_->set_frame_rate(std::stoi(video_representation->GetFrameRate()));
+        const std::string frame_rate = video_representation->GetFrameRate();
+        gl_renderer_->set_frame_rate(frame_rate.empty() ? 24 : std::stoi(video_representation->GetFrameRate()));
     }
 }
 

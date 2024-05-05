@@ -43,6 +43,11 @@ void decoder::stop()
 
 int decoder::read_packet(std::span<std::byte> buffer)
 {
+    if (!is_decoding_.load())
+    {
+        return {};
+    }
+
     if (initialization_segment_)
     {
         return std::exchange(initialization_segment_, {})->peek(buffer);
@@ -62,10 +67,6 @@ void decoder::do_decoding()
         }
 
         initialization_segment_ = events_handler_.find_initialization_segment(media_segment_->get_representation());
-        if (!initialization_segment_)
-        {
-            continue;
-        }
 
         std::optional<utils::decoder> media_decoder = utils::decoder::create(*this, frame_acceptor_);
         if (!media_decoder.has_value())
