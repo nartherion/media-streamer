@@ -32,6 +32,7 @@ public:
                                          frame_acceptor &acceptor);
 
     void decode();
+    void abort();
 
 private:
     decoder(av::format_context format_context, frame_acceptor &acceptor);
@@ -45,6 +46,7 @@ private:
     const std::vector<av::codec_context> codecs_;
     frame_acceptor &frame_acceptor_;
     av::format_context format_context_;
+    bool is_decoding_ = false;
 };
 
 } // namespace ms::utils

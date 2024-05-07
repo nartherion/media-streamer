@@ -152,13 +152,26 @@ std::optional<av::frame> decoder::decode_frame(const av::packet packet)
 
 void decoder::decode()
 {
-    while (const std::optional<av::packet> packet = get_next_packet())
+    is_decoding_ = true;
+
+    while (is_decoding_)
     {
+        const std::optional<av::packet> packet = get_next_packet();
+        if (!packet.has_value())
+        {
+            break;
+        }
+
         if (std::optional<av::frame> frame = decode_frame(packet.value()))
         {
             notify(std::move(frame.value()));
         }
     }
+}
+
+void decoder::abort()
+{
+    is_decoding_ = false;
 }
 
 } // namespace ms::utils

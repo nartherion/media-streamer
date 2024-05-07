@@ -131,7 +131,14 @@ void player::on_audio_representation_combo_box_currentIndexChanged([[maybe_unuse
 
 void player::on_download_mpd_button_clicked()
 {
-    if (media_manager_.initialize(get_url()))
+    const std::string url = get_url();
+    if (url.starts_with("https://"))
+    {
+        SPDLOG_WARN("Streaming via HTTPS is currently not supported");
+        return;
+    }
+
+    if (media_manager_.initialize(url))
     {
         const dash::mpd::IMPD *mpd = media_manager_.get_mpd();
         update_gui(mpd);
@@ -141,12 +148,18 @@ void player::on_download_mpd_button_clicked()
 
 void player::on_start_button_clicked()
 {
-    media_manager_.start();
+    if (media_manager_.start())
+    {
+        set_stop_button_enabled(true);
+        set_start_button_enabled(false);
+    }
 }
 
 void player::on_stop_button_clicked()
 {
     media_manager_.stop();
+    set_stop_button_enabled(false);
+    set_start_button_enabled(true);
 }
 
 player::player()
@@ -157,6 +170,7 @@ player::player()
       media_manager_(*gl_renderer_, audio_player_)
 {
     gl_renderer_->setEnabled(true);
+    set_stop_button_enabled(false);
     update_gui();
 }
 
@@ -344,10 +358,14 @@ std::shared_ptr<Ui::qt_player> player::make_gui()
     return ui;
 }
 
-void player::set_control_buttons_enabled(const bool enabled)
+void player::set_start_button_enabled(const bool enabled)
+{
+    ui_->start_button->setEnabled(enabled);
+}
+
+void player::set_stop_button_enabled(const bool enabled)
 {
     ui_->stop_button->setEnabled(enabled);
-    ui_->start_button->setEnabled(enabled);
 }
 
 void player::on_period_changed(const dash::mpd::IPeriod *period)
@@ -369,7 +387,7 @@ void player::on_period_changed(const dash::mpd::IPeriod *period)
 void player::update_gui(const dash::mpd::IMPD *mpd)
 {
     std::scoped_lock lock(ui_mutex_);
-    set_control_buttons_enabled(mpd != nullptr);
+    set_start_button_enabled(mpd != nullptr);
 
     const auto &periods = mpd ? mpd->GetPeriods() : std::vector<dash::mpd::IPeriod *>{};
     configure_period_combo_box(periods);

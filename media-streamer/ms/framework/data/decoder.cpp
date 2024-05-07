@@ -45,7 +45,7 @@ int decoder::read_packet(std::span<std::byte> buffer)
 {
     if (!is_decoding_.load())
     {
-        return {};
+        media_decoder_->abort();
     }
 
     if (initialization_segment_)
@@ -75,7 +75,7 @@ void decoder::do_decoding()
             continue;
         }
 
-        media_decoder->decode();
+        media_decoder_.emplace(std::move(media_decoder.value())).decode();
     }
 }
 

@@ -60,7 +60,8 @@ private:
     void update_configuration(const dash::mpd::IMPD *mpd);
     std::shared_ptr<Ui::qt_player> make_gui();
     void update_gui(const dash::mpd::IMPD *mpd = nullptr);
-    void set_control_buttons_enabled(bool enabled);
+    void set_start_button_enabled(bool enabled);
+    void set_stop_button_enabled(bool enabled);
     void on_period_changed(const dash::mpd::IPeriod *period);
     void configure_period_combo_box(const std::vector<dash::mpd::IPeriod *> &periods);
     void configure_adaptation_set_combo_boxes(
