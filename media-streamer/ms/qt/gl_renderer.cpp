@@ -3,7 +3,6 @@
 extern "C"
 {
 
-#include <libavutil/imgutils.h>
 #include <libswscale/swscale.h>
 
 } // extern "C"
@@ -18,7 +17,7 @@ namespace ms::qt
 namespace
 {
 
-av::frame to_rgb(av::frame frame)
+av::image to_rgb(av::frame frame)
 {
     const AVFrame *source_frame = frame.native();
     const auto source_format = static_cast<AVPixelFormat>(source_frame->format);
@@ -27,13 +26,8 @@ av::frame to_rgb(av::frame frame)
     const int width = source_frame->width;
     const int height = source_frame->height;
 
-    av::frame rgb_frame;
+    av::image rgb_frame(width, height, destination_format);
     AVFrame *destination_frame = rgb_frame.native();
-    destination_frame->width = width;
-    destination_frame->height = height;
-    destination_frame->format = destination_format;
-
-    av_image_alloc(destination_frame->data, destination_frame->linesize, width, height, destination_format, 1);
 
     SwsContext *const conversion = sws_getContext(width, height, source_format,
                                                   width, height, destination_format,
@@ -80,7 +74,7 @@ void gl_renderer::paintEvent(QPaintEvent *)
     painter.end();
 }
 
-void gl_renderer::set_frame(av::frame frame)
+void gl_renderer::set_frame(av::image frame)
 {
     std::scoped_lock lock(image_mutex_);
 

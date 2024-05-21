@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ms/presentation/frame_renderer.hpp>
+#include <ms/av/image.hpp>
 
 #include <mutex>
 
@@ -21,7 +22,7 @@ public:
 
 protected:
     void paintEvent(QPaintEvent *) override;
-    void set_frame(av::frame frame);
+    void set_frame(av::image frame);
 
 private:
     QImage image_;

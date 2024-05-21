@@ -5,6 +5,7 @@ add_library(${PROJECT_NAME}
     codec_context.cpp
     format_context.cpp
     frame.cpp
+    image.cpp
     packet.cpp)
 
 target_link_libraries(${PROJECT_NAME}
