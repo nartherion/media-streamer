@@ -44,7 +44,7 @@ std::vector<std::uint32_t> calculate_segment_start_times(const dash::mpd::ISegme
 
 } // namespace
 
-segment_template_stream::segment_template_stream(const dash::mpd::IMPD &mpd,
+segment_template_stream::segment_template_stream(std::shared_ptr<const dash::mpd::IMPD> mpd,
                                                  const std::vector<dash::mpd::IBaseUrl *> &base_urls,
                                                  const dash::mpd::IRepresentation &representation,
                                                  const dash::mpd::ISegmentTemplate &segment_template)
@@ -131,13 +131,13 @@ std::uint32_t segment_template_stream::get_size() const
         return static_cast<std::uint32_t>(segment_start_times_.size());
     }
 
-    if (mpd_.GetType() != "static")
+    if (mpd_->GetType() != "static")
     {
         return std::numeric_limits<std::uint32_t>::max() - 1;
     }
 
     const auto media_presentation_duration =
-        static_cast<double>(get_duration_in_seconds(mpd_.GetMediaPresentationDuration()));
+        static_cast<double>(get_duration_in_seconds(mpd_->GetMediaPresentationDuration()));
     const auto number_of_segments = static_cast<std::uint32_t>(
         std::ceil(segment_template_.GetTimescale() * media_presentation_duration / segment_template_.GetDuration()));
 

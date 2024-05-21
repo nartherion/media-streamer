@@ -15,11 +15,12 @@ namespace ms::framework::stream
 class manager
 {
 public:
-    manager(const std::size_t buffer_size, const dash::mpd::IMPD &mpd, utils::frame_acceptor &acceptor);
+    manager(const std::size_t buffer_size, const receiver::mpd_pointer mpd, utils::frame_acceptor &acceptor);
 
     bool start();
     void stop();
-    void set_representation(const dash::mpd::IPeriod &period, const dash::mpd::IAdaptationSet &adaptation_set,
+    void set_representation(receiver::mpd_pointer mpd, const dash::mpd::IPeriod &period,
+                            const dash::mpd::IAdaptationSet &adaptation_set,
                             const dash::mpd::IRepresentation &representation);
 
 private:

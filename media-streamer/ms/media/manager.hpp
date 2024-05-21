@@ -36,7 +36,7 @@ public:
     bool initialize(std::string url);
     bool start();
     void stop();
-    const dash::mpd::IMPD *get_mpd();
+    std::shared_ptr<const dash::mpd::IMPD> get_mpd() const;
     void set_configuration(configuration c);
 
 private:
@@ -52,7 +52,7 @@ private:
     constexpr static std::size_t sample_buffer_size = 4;
 
     std::unique_ptr<dash::IDASHManager, decltype(&delete_dash_manager)> dash_manager_;
-    const dash::mpd::IMPD* mpd_ = nullptr;
+    std::shared_ptr<const dash::mpd::IMPD> mpd_;
     std::optional<configuration> configuration_;
 
     presentation::manager video_presentation_manager_;

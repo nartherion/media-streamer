@@ -43,11 +43,6 @@ void decoder::stop()
 
 int decoder::read_packet(std::span<std::byte> buffer)
 {
-    if (!is_decoding_.load())
-    {
-        media_decoder_->abort();
-    }
-
     if (initialization_segment_)
     {
         return std::exchange(initialization_segment_, {})->peek(buffer);
@@ -68,14 +63,23 @@ void decoder::do_decoding()
 
         initialization_segment_ = events_handler_.find_initialization_segment(media_segment_->get_representation());
 
-        std::optional<utils::decoder> media_decoder = utils::decoder::create(*this, frame_acceptor_);
+        std::optional<utils::decoder> media_decoder = utils::decoder::create(*this);
         if (!media_decoder.has_value())
         {
             SPDLOG_ERROR("Failed to create media decoder");
             continue;
         }
 
-        media_decoder_.emplace(std::move(media_decoder.value())).decode();
+        while (is_decoding_.load())
+        {
+            std::optional<av::frame> frame = media_decoder->get_frame();
+            if (!frame.has_value())
+            {
+                break;
+            }
+
+            frame_acceptor_.accept(std::move(frame.value()));
+        }
     }
 }
 

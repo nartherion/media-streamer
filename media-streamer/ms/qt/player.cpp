@@ -98,35 +98,39 @@ std::optional<media::manager::configuration::stream> make_stream_configuration(
 
 } // namespace
 
-void player::on_period_combo_box_currentIndexChanged([[maybe_unused]] int index)
+void player::on_period_combo_box_currentIndexChanged([[maybe_unused]] const int index)
 {
-    const dash::mpd::IMPD *mpd = media_manager_.get_mpd();
-    on_period_changed(get_period(media_manager_.get_mpd()));
+    const std::shared_ptr<const dash::mpd::IMPD> mpd = media_manager_.get_mpd();
+    assert(mpd != nullptr);
+
+    on_period_changed(get_period(mpd));
     update_configuration(mpd);
 }
 
-void player::on_video_as_combo_box_currentIndexChanged([[maybe_unused]] int index)
+void player::on_video_as_combo_box_currentIndexChanged([[maybe_unused]] const int index)
 {
-    const dash::mpd::IMPD *mpd = media_manager_.get_mpd();
+    const std::shared_ptr<const dash::mpd::IMPD> mpd = media_manager_.get_mpd();
+    assert(mpd != nullptr);
+
     configure_video_representation_combo_box(get_video_adaptation_set(get_period(mpd)));
     update_configuration(mpd);
 }
 
-void player::on_video_representation_combo_box_currentIndexChanged([[maybe_unused]] int index)
+void player::on_audio_as_combo_box_currentIndexChanged([[maybe_unused]] const int index)
 {
-    update_configuration(media_manager_.get_mpd());
-}
+    const std::shared_ptr<const dash::mpd::IMPD> mpd = media_manager_.get_mpd();
+    assert(mpd != nullptr);
 
-void player::on_audio_as_combo_box_currentIndexChanged([[maybe_unused]] int index)
-{
-    const dash::mpd::IMPD *mpd = media_manager_.get_mpd();
     configure_audio_representation_combo_box(get_audio_adaptation_set(get_period(mpd)));
     update_configuration(mpd);
 }
 
-void player::on_audio_representation_combo_box_currentIndexChanged([[maybe_unused]] int index)
+void player::on_representation_combo_box_current_index_changed([[maybe_unused]] const int index)
 {
-    update_configuration(media_manager_.get_mpd());
+    const std::shared_ptr<const dash::mpd::IMPD> mpd = media_manager_.get_mpd();
+    assert(mpd != nullptr);
+
+    update_configuration(mpd);
 }
 
 void player::on_download_mpd_button_clicked()
@@ -138,9 +142,11 @@ void player::on_download_mpd_button_clicked()
         return;
     }
 
+    const std::shared_ptr<const dash::mpd::IMPD> old_mpd = media_manager_.get_mpd();
+
     if (media_manager_.initialize(url))
     {
-        const dash::mpd::IMPD *mpd = media_manager_.get_mpd();
+        const std::shared_ptr<const dash::mpd::IMPD> mpd = media_manager_.get_mpd();
         update_gui(mpd);
         update_configuration(mpd);
     }
@@ -166,9 +172,16 @@ player::player()
     : QMainWindow(nullptr),
       ui_(make_gui()),
       ui_mutex_(*this),
+      signals_mutex_(*this),
       gl_renderer_(ui_->video_render_widget),
       media_manager_(*gl_renderer_, audio_player_)
 {
+    connect(ui_->audio_representation_combo_box, qOverload<int>(&QComboBox::currentIndexChanged),
+            this, &player::on_representation_combo_box_current_index_changed);
+
+    connect(ui_->video_representation_combo_box, qOverload<int>(&QComboBox::currentIndexChanged),
+            this, &player::on_representation_combo_box_current_index_changed);
+
     gl_renderer_->setEnabled(true);
     set_stop_button_enabled(false);
     update_gui();
@@ -188,6 +201,20 @@ void player::ui_mutex::unlock()
     instance_.setEnabled(true);
 }
 
+player::signals_mutex::signals_mutex(player &instance)
+    : instance_(instance)
+{}
+
+void player::signals_mutex::lock()
+{
+    instance_.set_signals_enabled(false);
+}
+
+void player::signals_mutex::unlock()
+{
+    instance_.set_signals_enabled(true);
+}
+
 std::string player::get_url()
 {
     std::scoped_lock lock(ui_mutex_);
@@ -200,7 +227,7 @@ std::string player::get_url()
     return ui_->mpd_url_combo_box->currentText().toStdString();
 }
 
-const dash::mpd::IPeriod *player::get_period(const dash::mpd::IMPD *mpd)
+const dash::mpd::IPeriod *player::get_period(std::shared_ptr<const dash::mpd::IMPD> mpd)
 {
     if (mpd)
     {
@@ -305,7 +332,7 @@ const dash::mpd::IRepresentation *player::get_audio_representation(const dash::m
     return nullptr;
 }
 
-std::optional<media::manager::configuration> player::make_configuration(const dash::mpd::IMPD *mpd)
+std::optional<media::manager::configuration> player::make_configuration(std::shared_ptr<const dash::mpd::IMPD> mpd)
 {
     if (!mpd)
     {
@@ -318,13 +345,13 @@ std::optional<media::manager::configuration> player::make_configuration(const da
         return {};
     }
 
-    const dash::mpd::IAdaptationSet *video_as = get_video_adaptation_set(period);
-    const dash::mpd::IRepresentation *video_representation = get_video_representation(video_as);
+    const dash::mpd::IAdaptationSet *const video_as = get_video_adaptation_set(period);
+    const dash::mpd::IRepresentation *const video_representation = get_video_representation(video_as);
     const std::optional<media::manager::configuration::stream> video_stream =
         make_stream_configuration(video_as, video_representation);
 
-    const dash::mpd::IAdaptationSet *audio_as = get_audio_adaptation_set(period);
-    const dash::mpd::IRepresentation *audio_representation = get_audio_representation(audio_as);
+    const dash::mpd::IAdaptationSet *const audio_as = get_audio_adaptation_set(period);
+    const dash::mpd::IRepresentation *const audio_representation = get_audio_representation(audio_as);
     const std::optional<media::manager::configuration::stream> audio_stream =
         make_stream_configuration(audio_as, audio_representation);
 
@@ -336,18 +363,19 @@ std::optional<media::manager::configuration> player::make_configuration(const da
     };
 }
 
-void player::update_configuration(const dash::mpd::IMPD *mpd)
+void player::update_configuration(std::shared_ptr<const dash::mpd::IMPD> mpd)
 {
     if (const std::optional<media::manager::configuration> configuration = make_configuration(mpd))
     {
         media_manager_.set_configuration(configuration.value());
-    }
 
-    if (const dash::mpd::IRepresentation *video_representation =
-            get_video_representation(get_video_adaptation_set(get_period(mpd))))
-    {
-        const std::string frame_rate = video_representation->GetFrameRate();
-        gl_renderer_->set_frame_rate(frame_rate.empty() ? 24 : std::stoi(video_representation->GetFrameRate()));
+        if (const std::optional<media::manager::configuration::stream> video_stream = configuration->video_stream_)
+        {
+            const dash::mpd::IRepresentation &video_representation = video_stream->representation_;
+
+            const std::string frame_rate = video_representation.GetFrameRate();
+            gl_renderer_->set_frame_rate(frame_rate.empty() ? 24 : std::stoi(frame_rate));
+        }
     }
 }
 
@@ -360,12 +388,23 @@ std::shared_ptr<Ui::qt_player> player::make_gui()
 
 void player::set_start_button_enabled(const bool enabled)
 {
+    std::scoped_lock lock(ui_mutex_);
     ui_->start_button->setEnabled(enabled);
 }
 
 void player::set_stop_button_enabled(const bool enabled)
 {
+    std::scoped_lock lock(ui_mutex_);
     ui_->stop_button->setEnabled(enabled);
+}
+
+void player::set_signals_enabled(const bool enabled)
+{
+    std::scoped_lock lock(ui_mutex_);
+    for (QWidget *const widget : findChildren<QWidget*>())
+    {
+        widget->blockSignals(!enabled);
+    }
 }
 
 void player::on_period_changed(const dash::mpd::IPeriod *period)
@@ -384,9 +423,8 @@ void player::on_period_changed(const dash::mpd::IPeriod *period)
     configure_audio_representation_combo_box(default_audio_adaptation_set);
 }
 
-void player::update_gui(const dash::mpd::IMPD *mpd)
+void player::update_gui(std::shared_ptr<const dash::mpd::IMPD> mpd)
 {
-    std::scoped_lock lock(ui_mutex_);
     set_start_button_enabled(mpd != nullptr);
 
     const auto &periods = mpd ? mpd->GetPeriods() : std::vector<dash::mpd::IPeriod *>{};
@@ -398,14 +436,17 @@ void player::update_gui(const dash::mpd::IMPD *mpd)
 
 void player::configure_period_combo_box(const std::vector<dash::mpd::IPeriod *> &periods)
 {
-    QComboBox *combo_box = ui_->period_combo_box;
-    combo_box->clear();
-    combo_box->setEnabled(periods.size() > 1);
+    std::scoped_lock lock(ui_mutex_);
+    std::scoped_lock signals_lock(signals_mutex_);
+
+    QComboBox *const period_combo_box = ui_->period_combo_box;
+    period_combo_box->clear();
+    period_combo_box->setEnabled(periods.size() > 1);
 
     for (std::size_t index = 0; index < periods.size(); ++index)
     {
         const QString label(fmt::format("Period {}", index).c_str());
-        combo_box->addItem(label);
+        period_combo_box->addItem(label);
     }
 }
 
@@ -413,8 +454,11 @@ void player::configure_adaptation_set_combo_boxes(
         const std::vector<const dash::mpd::IAdaptationSet *> &video_adaptation_sets,
         const std::vector<const dash::mpd::IAdaptationSet *> &audio_adaptation_sets)
 {
-    QComboBox *video_as_combo_box = ui_->video_as_combo_box;
-    QComboBox *audio_as_combo_box = ui_->audio_as_combo_box;
+    std::scoped_lock ui_lock(ui_mutex_);
+    std::scoped_lock signals_lock(signals_mutex_);
+
+    QComboBox *const video_as_combo_box = ui_->video_as_combo_box;
+    QComboBox *const audio_as_combo_box = ui_->audio_as_combo_box;
 
     video_as_combo_box->clear();
     video_as_combo_box->setEnabled(video_adaptation_sets.size() > 1);
@@ -436,7 +480,10 @@ void player::configure_adaptation_set_combo_boxes(
 
 void player::configure_video_representation_combo_box(const dash::mpd::IAdaptationSet *video_adaptation_set)
 {
-    QComboBox *video_representation_combo_box = ui_->video_representation_combo_box;
+    std::scoped_lock ui_lock(ui_mutex_);
+    std::scoped_lock signals_lock(signals_mutex_);
+
+    QComboBox *const video_representation_combo_box = ui_->video_representation_combo_box;
 
     const auto &video_representations =
         video_adaptation_set ? video_adaptation_set->GetRepresentation() : std::vector<dash::mpd::IRepresentation*>{};
@@ -455,7 +502,10 @@ void player::configure_video_representation_combo_box(const dash::mpd::IAdaptati
 
 void player::configure_audio_representation_combo_box(const dash::mpd::IAdaptationSet *audio_adaptation_set)
 {
-    QComboBox *audio_representation_combo_box = ui_->audio_representation_combo_box;
+    std::scoped_lock ui_lock(ui_mutex_);
+    std::scoped_lock signals_lock(signals_mutex_);
+
+    QComboBox *const audio_representation_combo_box = ui_->audio_representation_combo_box;
 
     const auto &audio_representations =
         audio_adaptation_set ? audio_adaptation_set->GetRepresentation() : std::vector<dash::mpd::IRepresentation*>{};

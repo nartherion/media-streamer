@@ -51,7 +51,7 @@ std::vector<av::codec_context> make_codecs(av::format_context &format_context)
 
 } // namespace
 
-std::optional<decoder> decoder::create(framework::data::packet_provider &provider, frame_acceptor &acceptor)
+std::optional<decoder> decoder::create(framework::data::packet_provider &provider)
 {
     constexpr int buffer_size = 1 << 15;
     auto *const opaque = reinterpret_cast<void *>(&provider);
@@ -62,12 +62,11 @@ std::optional<decoder> decoder::create(framework::data::packet_provider &provide
         return {};
     }
 
-    return decoder(std::move(format_context.value()), acceptor);
+    return decoder(std::move(format_context.value()));
 }
 
-decoder::decoder(av::format_context format_context, frame_acceptor &acceptor)
+decoder::decoder(av::format_context format_context)
     : codecs_(make_codecs(format_context)),
-      frame_acceptor_(acceptor),
       format_context_(std::move(format_context))
 {}
 
@@ -134,11 +133,6 @@ bool decoder::decode_media(const av::packet packet, av::frame &frame)
     return true;
 }
 
-void decoder::notify(av::frame frame)
-{
-    frame_acceptor_.accept(std::move(frame));
-}
-
 std::optional<av::frame> decoder::decode_frame(const av::packet packet)
 {
     av::frame frame;
@@ -150,28 +144,17 @@ std::optional<av::frame> decoder::decode_frame(const av::packet packet)
     return {};
 }
 
-void decoder::decode()
+std::optional<av::frame> decoder::get_frame()
 {
-    is_decoding_ = true;
-
-    while (is_decoding_)
+    while (const std::optional<av::packet> packet = get_next_packet())
     {
-        const std::optional<av::packet> packet = get_next_packet();
-        if (!packet.has_value())
-        {
-            break;
-        }
-
         if (std::optional<av::frame> frame = decode_frame(packet.value()))
         {
-            notify(std::move(frame.value()));
+            return frame;
         }
     }
-}
 
-void decoder::abort()
-{
-    is_decoding_ = false;
+    return {};
 }
 
 } // namespace ms::utils

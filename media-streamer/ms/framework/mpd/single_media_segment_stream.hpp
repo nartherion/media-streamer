@@ -10,7 +10,7 @@ namespace ms::framework::mpd
 class single_media_segment_stream final : public abstract_representation_stream
 {
 public:
-    single_media_segment_stream(const dash::mpd::IMPD &mpd, const std::vector<dash::mpd::IBaseUrl *> &base_urls,
+    single_media_segment_stream(std::shared_ptr<const dash::mpd::IMPD> mpd, const std::vector<dash::mpd::IBaseUrl *> &base_urls,
                                 const dash::mpd::IRepresentation &representation);
 
     std::shared_ptr<dash::mpd::ISegment> get_initialization_segment() const override;

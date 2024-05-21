@@ -5,10 +5,10 @@
 namespace ms::framework::stream
 {
 
-receiver::receiver(const dash::mpd::IMPD &mpd, const std::size_t buffer_size)
-    : mpd_(mpd),
-      buffer_size_(buffer_size),
-      period_(mpd_.GetPeriods().front()),
+receiver::receiver(const mpd_pointer mpd, const std::size_t buffer_size)
+    : buffer_size_(buffer_size),
+      mpd_(mpd),
+      period_(mpd_->GetPeriods().front()),
       adaptation_set_(period_->GetAdaptationSets().front()),
       representation_(adaptation_set_->GetRepresentation().front()),
       adaptation_set_stream_(std::make_optional<mpd::adaptation_set_stream>(mpd_, *period_, *adaptation_set_)),
@@ -49,10 +49,14 @@ void receiver::stop()
     }
 }
 
-void receiver::set_representation(const dash::mpd::IPeriod &period, const dash::mpd::IAdaptationSet &adaptation_set,
+void receiver::set_representation(const mpd_pointer mpd, const dash::mpd::IPeriod &period,
+                                  const dash::mpd::IAdaptationSet &adaptation_set,
                                   const dash::mpd::IRepresentation &representation)
 {
     std::scoped_lock lock(monitor_mutex_);
+    assert(mpd_ = mpd);
+
+    std::string message;
 
     const auto new_representation = gsl::make_not_null(&representation);
     if (representation_ == new_representation)
@@ -79,8 +83,7 @@ void receiver::set_representation(const dash::mpd::IPeriod &period, const dash::
     }
 
     representation_stream_ = adaptation_set_stream_->get_representation_stream(*representation_);
-
-    settings_updated_.store(true);
+    SPDLOG_INFO("Representation stream updated");
 }
 
 std::shared_ptr<data::object> receiver::get_oldest_segment()
@@ -117,6 +120,8 @@ std::shared_ptr<data::object> receiver::get_next_segment()
     if (const std::shared_ptr<dash::mpd::ISegment> segment =
             representation_stream_->get_media_segment(segment_number_ + segment_offset_))
     {
+        const std::uint32_t size = representation_stream_->get_size();
+        SPDLOG_INFO("Segment extracted {}/{}", segment_number_, size);
         ++segment_number_;
         return std::make_shared<data::object>(segment, *representation_);
     }
@@ -136,7 +141,7 @@ std::shared_ptr<data::object> receiver::get_initialization_segment()
 
 std::uint32_t receiver::calculate_segment_offset() const
 {
-    if (mpd_.GetType() == "static")
+    if (mpd_->GetType() == "static")
     {
         return {};
     }
@@ -179,20 +184,11 @@ void receiver::do_buffering()
 
         segment->start_download();
         segment->wait_finished();
-
-        if (!buffer_->push(segment))
-        {
-            break;
-        }
-
-        if (settings_updated_.load())
-        {
-            settings_updated_.store(false);
-            download_initialization_segment();
-        }
+        buffer_->push(segment);
     }
 
     buffer_->set_eos();
+    SPDLOG_INFO("Buffering thread exited");
 }
 
 } // namespace ms::framework::stream

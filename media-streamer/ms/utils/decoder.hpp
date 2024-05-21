@@ -16,7 +16,6 @@
 #include <ms/av/frame.hpp>
 #include <ms/av/packet.hpp>
 #include <ms/framework/data/packet_provider.hpp>
-#include <ms/utils/frame_acceptor.hpp>
 
 #include <vector>
 #include <optional>
@@ -28,23 +27,19 @@ namespace ms::utils
 class decoder
 {
 public:
-    static std::optional<decoder> create(framework::data::packet_provider &provider,
-                                         frame_acceptor &acceptor);
+    static std::optional<decoder> create(framework::data::packet_provider &provider);
 
-    void decode();
-    void abort();
+    std::optional<av::frame> get_frame();
 
 private:
-    decoder(av::format_context format_context, frame_acceptor &acceptor);
+    decoder(av::format_context format_context);
 
     std::optional<av::codec_context> find_codec(int index);
     std::optional<av::packet> get_next_packet();
     std::optional<av::frame> decode_frame(av::packet packet);
     bool decode_media(av::packet packet, av::frame &frame);
-    void notify(av::frame frame);
 
     const std::vector<av::codec_context> codecs_;
-    frame_acceptor &frame_acceptor_;
     av::format_context format_context_;
     bool is_decoding_ = false;
 };

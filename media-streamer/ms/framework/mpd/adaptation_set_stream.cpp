@@ -10,7 +10,8 @@ namespace
 {
 
 adaptation_set_stream::representation_stream_table make_representation_stream_table(
-        const dash::mpd::IMPD &mpd, const dash::mpd::IAdaptationSet &adaptation_set, const dash::mpd::IPeriod &period)
+        const std::shared_ptr<const dash::mpd::IMPD> mpd, const dash::mpd::IAdaptationSet &adaptation_set,
+        const dash::mpd::IPeriod &period)
 {
     const auto get_representation_stream_type =
         [&adaptation_set, &period]
@@ -81,7 +82,7 @@ adaptation_set_stream::representation_stream_table make_representation_stream_ta
 
 } // namespace
 
-adaptation_set_stream::adaptation_set_stream(const dash::mpd::IMPD &mpd, const dash::mpd::IPeriod &period,
+adaptation_set_stream::adaptation_set_stream(std::shared_ptr<const dash::mpd::IMPD> mpd, const dash::mpd::IPeriod &period,
                                              const dash::mpd::IAdaptationSet &adaptation_set)
     : representation_stream_table_(make_representation_stream_table(mpd, adaptation_set, period))
 {}

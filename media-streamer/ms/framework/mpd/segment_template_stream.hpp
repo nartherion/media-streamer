@@ -12,7 +12,7 @@ namespace ms::framework::mpd
 class segment_template_stream final : public abstract_representation_stream
 {
 public:
-    segment_template_stream(const dash::mpd::IMPD &mpd, const std::vector<dash::mpd::IBaseUrl *> &base_urls,
+    segment_template_stream(std::shared_ptr<const dash::mpd::IMPD> mpd, const std::vector<dash::mpd::IBaseUrl *> &base_urls,
                             const dash::mpd::IRepresentation &representation,
                             const dash::mpd::ISegmentTemplate &segment_template);
 

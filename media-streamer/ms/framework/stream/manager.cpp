@@ -9,7 +9,7 @@ namespace
 
 } // namespace
 
-manager::manager(const std::size_t buffer_size, const dash::mpd::IMPD &mpd, utils::frame_acceptor &acceptor)
+manager::manager(const std::size_t buffer_size, const receiver::mpd_pointer mpd, utils::frame_acceptor &acceptor)
     : receiver_(mpd, buffer_size),
       decoder_(receiver_, acceptor)
 {}
@@ -47,10 +47,11 @@ void manager::stop()
     receiver_.stop();
 }
 
-void manager::set_representation(const dash::mpd::IPeriod &period, const dash::mpd::IAdaptationSet &adaptation_set,
+void manager::set_representation(const std::shared_ptr<const dash::mpd::IMPD> mpd, const dash::mpd::IPeriod &period,
+                                 const dash::mpd::IAdaptationSet &adaptation_set,
                                  const dash::mpd::IRepresentation &representation)
 {
-    receiver_.set_representation(period, adaptation_set, representation);
+    receiver_.set_representation(mpd, period, adaptation_set, representation);
 }
 
 } // namespace ms::framework::stream

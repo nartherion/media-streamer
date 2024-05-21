@@ -3,7 +3,7 @@
 namespace ms::framework::mpd
 {
 
-segment_list_stream::segment_list_stream(const dash::mpd::IMPD &mpd,
+segment_list_stream::segment_list_stream(std::shared_ptr<const dash::mpd::IMPD> mpd,
                                          const std::vector<dash::mpd::IBaseUrl *> &base_urls,
                                          const dash::mpd::ISegmentList &segment_list)
     : abstract_representation_stream(mpd, base_urls),

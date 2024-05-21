@@ -22,6 +22,7 @@ public:
 
     bool push(T object);
     T pop();
+    void clear();
     void set_eos();
 
 private:

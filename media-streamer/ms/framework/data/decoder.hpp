@@ -4,6 +4,7 @@
 #include <ms/framework/data/decoder_events_handler.hpp>
 #include <ms/framework/stream/receiver.hpp>
 #include <ms/utils/decoder.hpp>
+#include <ms/utils/frame_acceptor.hpp>
 
 #include <thread>
 
@@ -27,7 +28,6 @@ private:
     decoder_events_handler &events_handler_;
     std::shared_ptr<object> media_segment_;
     std::shared_ptr<object> initialization_segment_;
-    std::optional<utils::decoder> media_decoder_;
     std::thread decoding_thread_;
     std::atomic<bool> is_decoding_ = false;
 };

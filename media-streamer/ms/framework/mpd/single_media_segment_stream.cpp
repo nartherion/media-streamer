@@ -5,7 +5,7 @@
 namespace ms::framework::mpd
 {
 
-single_media_segment_stream::single_media_segment_stream(const dash::mpd::IMPD &mpd,
+single_media_segment_stream::single_media_segment_stream(std::shared_ptr<const dash::mpd::IMPD> mpd,
                                                          const std::vector<dash::mpd::IBaseUrl *> &base_urls,
                                                          const dash::mpd::IRepresentation &representation)
     : abstract_representation_stream(mpd, base_urls),

@@ -12,7 +12,7 @@ namespace ms::framework::mpd
 class segment_list_stream final : public abstract_representation_stream
 {
 public:
-    segment_list_stream(const dash::mpd::IMPD &mpd, const std::vector<dash::mpd::IBaseUrl *> &base_urls,
+    segment_list_stream(std::shared_ptr<const dash::mpd::IMPD> mpd, const std::vector<dash::mpd::IBaseUrl *> &base_urls,
                         const dash::mpd::ISegmentList &segment_list);
 
     std::shared_ptr<dash::mpd::ISegment> get_initialization_segment() const override;

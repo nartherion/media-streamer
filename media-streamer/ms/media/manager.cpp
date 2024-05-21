@@ -15,7 +15,7 @@ manager::manager(presentation::frame_renderer &video_renderer, presentation::fra
 
 bool manager::initialize(std::string url)
 {
-    mpd_ = dash_manager_->Open(url.data());
+    mpd_ = std::shared_ptr<const dash::mpd::IMPD>(dash_manager_->Open(url.data()));
     if (!mpd_)
     {
         SPDLOG_ERROR("Failed to parse the MPD: {}", url);
@@ -44,26 +44,8 @@ bool manager::start()
         return false;
     }
 
-    const auto &[period, video_stream, audio_stream] = configuration_.value();
-
-    if (video_stream.has_value())
-    {
-        start_video();
-    }
-    else
-    {
-        SPDLOG_WARN("Video configuration is missing");
-    }
-
-    if (audio_stream.has_value())
-    {
-        start_audio();
-    }
-    else
-    {
-        SPDLOG_WARN("Audio configuration is missing");
-    }
-
+    start_video();
+    start_video();
     is_started_ = true;
     return true;
 }
@@ -81,7 +63,7 @@ void manager::stop()
     return;
 }
 
-const dash::mpd::IMPD *manager::get_mpd()
+std::shared_ptr<const dash::mpd::IMPD> manager::get_mpd() const
 {
     return mpd_;
 }
@@ -90,73 +72,73 @@ void manager::set_configuration(const configuration c)
 {
     const auto &[period, video_stream, audio_stream] = configuration_.emplace(c);
 
-    if (video_stream_manager_.has_value() && video_stream.has_value())
+    if (video_stream.has_value())
     {
+        if (!video_stream_manager_.has_value())
+        {
+            video_stream_manager_.emplace(segment_buffer_size, mpd_, video_presentation_manager_);
+        }
+
         const auto &[adaptation_set, representation] = video_stream.value();
-        video_stream_manager_->set_representation(period, adaptation_set, representation);
+        video_stream_manager_->set_representation(mpd_, period, adaptation_set, representation);
+    }
+    else
+    {
+        SPDLOG_WARN("Video configuration is missing");
+        video_stream_manager_.reset();
     }
 
-    if (audio_stream_manager_.has_value() && audio_stream.has_value())
+    if (audio_stream.has_value())
     {
+        if (!audio_stream_manager_.has_value())
+        {
+            audio_stream_manager_.emplace(segment_buffer_size, mpd_, audio_presentation_manager_);
+        }
+
         const auto &[adaptation_set, representation] = audio_stream.value();
-        audio_stream_manager_->set_representation(period, adaptation_set, representation);
+        audio_stream_manager_->set_representation(mpd_, period, adaptation_set, representation);
+    }
+    else
+    {
+        SPDLOG_WARN("Audio configuration is missing");
+        audio_stream_manager_.reset();
     }
 }
 
 void manager::start_video()
 {
-    if (!video_stream_manager_.has_value())
+    if (video_stream_manager_.has_value())
     {
-        video_stream_manager_.emplace(segment_buffer_size, *mpd_, video_presentation_manager_);
-    }
-
-    if (configuration_.has_value())
-    {
-        const dash::mpd::IPeriod &period = configuration_->period_;
-
-        if (const std::optional<configuration::stream> video_stream = configuration_->video_stream_)
-        {
-            const auto &[adaptation_set, representation] = video_stream.value();
-            video_stream_manager_->set_representation(period, adaptation_set, representation);
-
-            video_presentation_manager_.start();
-            video_stream_manager_->start();
-        }
+        video_presentation_manager_.start();
+        video_stream_manager_->start();
     }
 }
 
 void manager::start_audio()
 {
-    if (!audio_stream_manager_.has_value())
+    if (audio_stream_manager_.has_value())
     {
-        audio_stream_manager_.emplace(segment_buffer_size, *mpd_, audio_presentation_manager_);
-    }
-
-    if (configuration_.has_value())
-    {
-        const dash::mpd::IPeriod &period = configuration_->period_;
-
-        if (const std::optional<configuration::stream> audio_stream = configuration_->audio_stream_)
-        {
-            const auto &[adaptation_set, representation] = audio_stream.value();
-            audio_stream_manager_->set_representation(period, adaptation_set, representation);
-
-            audio_presentation_manager_.start();
-            audio_stream_manager_->start();
-        }
+        audio_presentation_manager_.start();
+        audio_stream_manager_->start();
     }
 }
 
 void manager::stop_video()
 {
-    video_stream_manager_->stop();
-    video_presentation_manager_.stop();
+    if (video_stream_manager_.has_value())
+    {
+        video_stream_manager_->stop();
+        video_presentation_manager_.stop();
+    }
 }
 
 void manager::stop_audio()
 {
-    audio_stream_manager_->stop();
-    audio_presentation_manager_.stop();
+    if (audio_stream_manager_.has_value())
+    {
+        audio_stream_manager_->stop();
+        audio_presentation_manager_.stop();
+    }
 }
 
 void manager::delete_dash_manager(dash::IDASHManager *dash_manager)

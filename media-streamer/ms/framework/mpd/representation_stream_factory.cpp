@@ -9,7 +9,8 @@ namespace ms::framework::mpd
 namespace
 {
 
-std::vector<dash::mpd::IBaseUrl *> resolve_base_url(const dash::mpd::IMPD &mpd, const dash::mpd::IPeriod &period,
+std::vector<dash::mpd::IBaseUrl *> resolve_base_url(const std::shared_ptr<const dash::mpd::IMPD> mpd,
+                                                    const dash::mpd::IPeriod &period,
                                                     const dash::mpd::IAdaptationSet &adaptation_set,
                                                     const std::size_t mpd_base_url_index,
                                                     const std::size_t period_base_url_index,
@@ -17,7 +18,7 @@ std::vector<dash::mpd::IBaseUrl *> resolve_base_url(const dash::mpd::IMPD &mpd, 
 {
     std::vector<dash::mpd::IBaseUrl *> base_urls;
 
-    const std::vector<dash::mpd::IBaseUrl *> &mpd_base_urls = mpd.GetBaseUrls();
+    const std::vector<dash::mpd::IBaseUrl *> &mpd_base_urls = mpd->GetBaseUrls();
     if (!mpd_base_urls.empty())
     {
         if (mpd_base_urls.size() > mpd_base_url_index)
@@ -61,12 +62,12 @@ std::vector<dash::mpd::IBaseUrl *> resolve_base_url(const dash::mpd::IMPD &mpd, 
         const std::string &url = base_urls.front()->GetUrl();
         if (!url.starts_with("http://") && !url.starts_with("https://"))
         {
-            base_urls.insert(base_urls.begin(), mpd.GetMPDPathBaseUrl());
+            base_urls.insert(base_urls.begin(), mpd->GetMPDPathBaseUrl());
         }
     }
     else
     {
-        base_urls.push_back(mpd.GetMPDPathBaseUrl());
+        base_urls.push_back(mpd->GetMPDPathBaseUrl());
     }
 
     return base_urls;
@@ -119,8 +120,9 @@ dash::mpd::ISegmentTemplate *find_segment_template(
 } // namespace
 
 std::shared_ptr<representation_stream> representation_stream_factory::create(
-        const representation_stream::type type, const dash::mpd::IMPD &mpd, const dash::mpd::IPeriod &period,
-        const dash::mpd::IAdaptationSet &adaptation_set, const dash::mpd::IRepresentation &representation)
+        const representation_stream::type type, const std::shared_ptr<const dash::mpd::IMPD> mpd,
+        const dash::mpd::IPeriod &period, const dash::mpd::IAdaptationSet &adaptation_set,
+        const dash::mpd::IRepresentation &representation)
 {
     const std::vector<dash::mpd::IBaseUrl *> base_urls = resolve_base_url(mpd, period, adaptation_set, {}, {}, {});
 
