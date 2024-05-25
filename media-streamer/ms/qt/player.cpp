@@ -158,6 +158,7 @@ void player::on_start_button_clicked()
     {
         set_stop_button_enabled(true);
         set_start_button_enabled(false);
+        set_download_mpd_button_enabled(false);
     }
 }
 
@@ -166,6 +167,7 @@ void player::on_stop_button_clicked()
     media_manager_.stop();
     set_stop_button_enabled(false);
     set_start_button_enabled(true);
+    set_download_mpd_button_enabled(true);
 }
 
 player::player()
@@ -396,6 +398,12 @@ void player::set_stop_button_enabled(const bool enabled)
 {
     std::scoped_lock lock(ui_mutex_);
     ui_->stop_button->setEnabled(enabled);
+}
+
+void player::set_download_mpd_button_enabled(const bool enabled)
+{
+    std::scoped_lock lock(ui_mutex_);
+    ui_->download_mpd_button->setEnabled(enabled);
 }
 
 void player::set_signals_enabled(const bool enabled)

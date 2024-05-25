@@ -73,6 +73,7 @@ private:
     void update_gui(std::shared_ptr<const dash::mpd::IMPD> mpd = nullptr);
     void set_start_button_enabled(bool enabled);
     void set_stop_button_enabled(bool enabled);
+    void set_download_mpd_button_enabled(bool enabled);
     void set_signals_enabled(bool enabled);
     void on_period_changed(const dash::mpd::IPeriod *period);
     void configure_period_combo_box(const std::vector<dash::mpd::IPeriod *> &periods);
