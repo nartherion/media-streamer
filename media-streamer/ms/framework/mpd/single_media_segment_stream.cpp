@@ -47,7 +47,7 @@ std::shared_ptr<dash::mpd::ISegment> single_media_segment_stream::get_media_segm
         return std::shared_ptr<dash::mpd::ISegment>(base_urls[segment_number]->ToMediaSegment(base_urls_));
     }
 
-    return std::shared_ptr<dash::mpd::ISegment>(base_urls.front()->ToMediaSegment(base_urls_));
+    return {};
 }
 
 std::shared_ptr<dash::mpd::ISegment> single_media_segment_stream::get_bitstream_switching_segment() const
@@ -62,7 +62,7 @@ representation_stream::type single_media_segment_stream::get_stream_type() const
 
 std::uint32_t single_media_segment_stream::get_size() const
 {
-    return std::numeric_limits<std::uint32_t>::max() - 1;
+    return static_cast<std::uint32_t>(representation_.GetBaseURLs().size());
 }
 
 std::uint32_t single_media_segment_stream::get_first_segment_number() const

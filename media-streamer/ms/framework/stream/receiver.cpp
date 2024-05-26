@@ -173,20 +173,19 @@ void receiver::download_initialization_segment()
 
 void receiver::do_buffering()
 {
-    while (const std::shared_ptr<data::object> segment = get_next_segment())
+    while (is_buffering_.load())
     {
         download_initialization_segment();
 
-        if (!is_buffering_.load())
+        if (const std::shared_ptr<data::object> segment = get_next_segment())
         {
-            break;
+            segment->start_download();
+            segment->wait_finished();
+            buffer_->push(segment);
         }
-
-        segment->start_download();
-        segment->wait_finished();
-        buffer_->push(segment);
     }
 
+    segment_number_ = {};
     buffer_->set_eos();
     SPDLOG_INFO("Buffering thread exited");
 }
